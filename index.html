@@ -12,7 +12,7 @@
 
     <style>
         :root {
-            --bg-color: #f8fafc;
+            --bg-color: #cbd5e1;
             --card-bg: #ffffff;
             --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             --success-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
@@ -26,7 +26,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }
-        body { background-color: #cbd5e1; color: var(--text); padding: 20px 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { background-color: var(--bg-color); color: var(--text); padding: 20px 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.3s ease; }
         .app-container { width: 100%; max-width: 450px; min-height: 85vh; background: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
         
         /* Splash Screen */
@@ -48,20 +48,24 @@
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 7px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; color: var(--text); font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
-        .form-group input:focus, .form-group textarea:focus { border-color: #3b82f6; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12); }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #3b82f6; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12); }
         
         /* Premium Gradient Buttons */
         .btn { width: 100%; padding: 14px; background: var(--primary-gradient); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); margin-top: 12px; box-shadow: var(--btn-shadow); letter-spacing: 0.3px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3); }
+        .btn:hover { transform: translateY(-2px); opacity: 0.95; }
         .btn-success { background: var(--success-gradient); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
         .btn-danger { background: var(--danger-gradient); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
         .btn-dark { background: var(--dark-gradient); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
         .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; margin-top: 0; box-shadow: none; border-radius: 8px; }
         
         /* App Header */
-        .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-        .app-header h3 { font-size: 19px; font-weight: 800; background: linear-gradient(to right, #1e3a8a, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .admin-link { color: #2563eb; font-size: 13px; cursor: pointer; font-weight: 700; background: #f0f6ff; padding: 8px 14px; border-radius: 10px; }
+        .app-header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .header-top h3 { font-size: 19px; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .fb-group-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; background: #1877f2; color: white; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px; box-shadow: 0 4px 10px rgba(24, 119, 242, 0.2); transition: transform 0.2s; }
+        .fb-group-btn:hover { transform: scale(1.03); }
+        
+        .admin-link { color: #2563eb; font-size: 13px; cursor: pointer; font-weight: 700; background: #f0f6ff; padding: 6px 12px; border-radius: 8px; text-align: center; }
         .logout-link { color: #ef4444; font-size: 13px; cursor: pointer; font-weight: 700; background: #fef2f2; padding: 6px 12px; border-radius: 8px; }
 
         /* Stats Dashboard */
@@ -71,7 +75,7 @@
 
         /* Premium Event Cards */
         .event-card { background: #ffffff; border-radius: 18px; overflow: hidden; margin-bottom: 24px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9; }
-        .event-img { width: 100%; height: 140px; background: linear-gradient(45deg, #e2e8f0, #cbd5e1); display: flex; justify-content: center; align-items: center; color: #475569; font-size: 13px; font-weight: 700; }
+        .event-img { width: 100%; height: 140px; background: var(--primary-gradient); display: flex; justify-content: center; align-items: center; color: #ffffff; font-size: 14px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9; }
         .event-body { padding: 18px; }
         .event-body h3 { font-size: 18px; font-weight: 700; color: var(--text); }
         .event-fee { color: #10b981; font-weight: 800; margin: 8px 0; font-size: 19px; }
@@ -101,7 +105,7 @@
 
     <div id="slip-modal-overlay" class="modal-overlay">
         <div class="modal-box" style="border-top-color: #10b981; max-width: 410px;">
-            <h3 style="color:#10b981; text-align:center; margin-bottom:12px;">🎉 বুকing Approved!</h3>
+            <h3 style="color:#10b981; text-align:center; margin-bottom:12px;">🎉 বুকিং Approved!</h3>
             
             <div id="invoice-slip-capture" class="slip-wrapper">
                 <div class="slip-header">
@@ -164,16 +168,21 @@
 
         <div id="user-panel" class="screen">
             <div class="app-header">
-                <div><h3>Buses of Gabtoli Zone</h3></div>
-                <span class="admin-link" onclick="showScreen('admin-login-screen')">Admin Panel</span>
+                <div class="header-top">
+                    <h3>Buses of Gabtoli Zone</h3>
+                    <a href="https://www.facebook.com/share/g/1BpQMs5Nuu/" target="_blank" class="fb-group-btn">👥 ফেসবুক গ্রুপ</a>
+                </div>
+                <span class="admin-link" onclick="showScreen('admin-login-screen')">Admin Panel Access</span>
             </div>
             <div id="user-events-container"></div>
         </div>
 
         <div id="booking-screen" class="screen">
             <div class="app-header">
-                <h3 style="font-size:18px;">সিট বুকিং ফরম</h3>
-                <span style="cursor:pointer; color:#2563eb; font-weight:700; font-size:14px;" onclick="showScreen('user-panel')">ফিরে যান</span>
+                <div class="header-top">
+                    <h3 style="font-size:18px;">সিট বুকিং ফরম</h3>
+                    <span style="cursor:pointer; color:#2563eb; font-weight:700; font-size:14px;" onclick="showScreen('user-panel')">ফিরে যান</span>
+                </div>
             </div>
             <form id="booking-form" onsubmit="submitBookingRequest(event)">
                 <input type="hidden" id="selected-event-index">
@@ -205,8 +214,23 @@
 
         <div id="admin-panel" class="screen">
             <div class="app-header">
-                <h3 style="color:#ef4444; font-size:18px;" id="admin-welcome-title">Admin Control</h3>
-                <span class="logout-link" onclick="logoutAdmin()">Logout</span>
+                <div class="header-top">
+                    <h3 style="color:#ef4444; font-size:18px;" id="admin-welcome-title">Admin Control</h3>
+                    <span class="logout-link" onclick="logoutAdmin()">Logout</span>
+                </div>
+            </div>
+
+            <div style="background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom:24px; box-shadow:var(--card-shadow);">
+                <h4 style="font-size:15px; font-weight:700; color:#2563eb; margin-bottom:12px;">🎨 অ্যাপ থিম ব্যাকগ্রাউন্ড কন্ট্রোল</h4>
+                <div class="form-group">
+                    <label>পছন্দের থিম নির্বাচন করুন:</label>
+                    <select id="admin-theme-select">
+                        <option value="blue">Ocean Blue (ডিফল্ট নীল থিম)</option>
+                        <option value="green">Forest Green (প্রিমিয়াম সবুজ থিম)</option>
+                        <option value="red">Crimson Red (ডাইনামিক লাল থিম)</option>
+                    </select>
+                </div>
+                <button class="btn btn-dark" style="margin-top:0;" onclick="saveAppTheme()">✨ থিম লাইভ সেভ করুন</button>
             </div>
 
             <div class="stats-grid">
@@ -241,7 +265,7 @@
                 <div class="form-group"><textarea id="ev-desc" placeholder="বিবরণ ও তথ্যাাদি"></textarea></div>
                 <div class="form-group" style="margin-bottom:12px;"><input type="number" id="ev-fee" placeholder="এন্ট্রি ফি (টাকা)"></div>
                 <button id="event-submit-btn" class="btn btn-success" style="margin-top:0;" onclick="createOrUpdateEvent()">ইভেন্ট লাইভ করুন</button>
-                <button id="event-cancel-edit-btn" class="btn" style="background:#cbd5e1; color:#0f172a; margin-top:8px; display:none;" onclick="resetEventForm()">এডিট ক্যানসেল</button>
+                <button id="event-cancel-edit-btn" class="btn" style="background:#cbd5e1; color:#0f172a; margin-top:8px; display:none;" onclick="resetEventForm()">এডিট ক্যানсел</button>
                 
                 <h4 style="margin-top:20px; margin-bottom:10px; font-size:13px; color:var(--text-muted);">বর্তমান ইভেন্টসমূহের লিস্ট:</h4>
                 <div id="admin-events-management-list"></div>
@@ -258,23 +282,56 @@
             bookings: {}, 
             visitorLog: {}, 
             activeSession: null,
-            adminUser: null
+            adminUser: null,
+            theme: "blue" // ডিফল্ট থিম কালার ভ্যালু
         };
 
-        // ইউজারের ফোনে ডাউনলোড করা হয়ে গেলে স্লিপ ট্র্যাকিং স্টেট ক্লিয়ার করার জন্য
         let sessionCheckedSlip = false;
+
+        // থিম কালার ম্যাপ কনফিগারেশন
+        const themeStyles = {
+            blue: {
+                bg: "#cbd5e1",
+                primary: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                shadow: "0 4px 12px rgba(37, 99, 235, 0.2)"
+            },
+            green: {
+                bg: "#bbf7d0",
+                primary: "linear-gradient(135deg, #10b981 0%, #065f46 100%)",
+                shadow: "0 4px 12px rgba(16, 185, 129, 0.2)"
+            },
+            red: {
+                bg: "#fecaca",
+                primary: "linear-gradient(135deg, #ef4444 0%, #991b1b 100%)",
+                shadow: "0 4px 12px rgba(239, 68, 68, 0.2)"
+            }
+        };
+
+        // থিম অ্যাপ্লাই করার ফাংশন
+        function applyTheme(themeName) {
+            const selectedTheme = themeStyles[themeName] || themeStyles.blue;
+            document.documentElement.style.setProperty('--bg-color', selectedTheme.bg);
+            document.documentElement.style.setProperty('--primary-gradient', selectedTheme.primary);
+            document.documentElement.style.setProperty('--btn-shadow', selectedTheme.shadow);
+        }
 
         function saveData() {
             localStorage.setItem('gz_app_data', JSON.stringify(appData));
         }
 
-        // লাইভ ব্যাকগ্রাউন্ড নোটিশ চেক
+        // লাইভ ব্যাকগ্রাউন্ড ডাটা ও থিম রিয়েল-টাইম সিঙ্ক
         setInterval(() => {
             let latestData = JSON.parse(localStorage.getItem('gz_app_data'));
-            if (latestData && latestData.noticeId !== appData.noticeId) {
-                appData.notice = latestData.notice;
-                appData.noticeId = latestData.noticeId;
-                triggerNoticePopup(true); 
+            if (latestData) {
+                if (latestData.noticeId !== appData.noticeId) {
+                    appData.notice = latestData.notice;
+                    appData.noticeId = latestData.noticeId;
+                    triggerNoticePopup(true); 
+                }
+                if (latestData.theme !== appData.theme) {
+                    appData.theme = latestData.theme;
+                    applyTheme(appData.theme);
+                }
             }
         }, 1500);
 
@@ -288,6 +345,9 @@
             }
         }
 
+        // ইনিশিয়াল লোডেই সেভ করা থিম চালু করা
+        applyTheme(appData.theme || 'blue');
+
         setTimeout(() => {
             document.getElementById('splash-screen').style.opacity = '0';
             setTimeout(() => {
@@ -295,7 +355,7 @@
                 trackVisitor();
                 checkSession();
                 triggerNoticePopup(false);
-                checkForApprovedSlip(); // ইউজার এপ্রুভ স্লিপ ট্র্যাকিং রেন্ডার
+                checkForApprovedSlip(); 
             }, 500);
         }, 3000);
 
@@ -361,7 +421,7 @@
                             <h3>${ev.title}</h3>
                             <p style="font-size:13px; color:var(--text-muted); margin-top:6px; line-height:1.4;">${ev.desc}</p>
                             <p class="event-fee">${ev.fee} ৳</p>
-                            <button class="btn" style="margin-top:6px;" onclick="openBookingForm(${idx})">বুকিং করুন / সিট প্ল্যান</button>
+                            <button class="btn" style="margin-top:6px;" onclick="openBookingForm(${idx})">বुकিং করুন / সিট প্ল্যান</button>
                         </div>
                     </div>`;
             });
@@ -402,7 +462,6 @@
             document.getElementById('selected-seat').value = seatId;
         }
 
-        // ইউজার বুকিং সাবমিট লজিক
         function submitBookingRequest(e) {
             e.preventDefault();
             const seatId = document.getElementById('selected-seat').value;
@@ -427,26 +486,22 @@
                 address: document.getElementById('bk-address').value,
                 lastDigits: document.getElementById('bk-last-digits').value,
                 byAdmin: null,
-                showSlipToUser: false // এপ্রুভ হওয়ার পর ট্রু হবে
+                showSlipToUser: false 
             };
             
-            // ফোন মেমরিতে ট্র্যাকিং সেশন রাখার জন্য লোকাল সেটআপ
             localStorage.setItem('gz_my_last_ordered_seat', seatId);
-
             saveData();
             alert('আপনার বুকিং রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!');
             document.getElementById('booking-form').reset();
             showScreen('user-panel');
         }
 
-        // ইউজার স্লিপ এপ্রুভাল অটো-পপআপ ডিটেকশন
         function checkForApprovedSlip() {
             if(appData.activeSession === 'admin') return;
             const lastOrderedSeat = localStorage.getItem('gz_my_last_ordered_seat');
             if(lastOrderedSeat && appData.bookings[lastOrderedSeat]) {
                 const booking = appData.bookings[lastOrderedSeat];
                 if(booking.status === 'booked' && booking.showSlipToUser === true) {
-                    // স্লিপ মেকানিজম রেন্ডার করা
                     document.getElementById('slip-event-title').innerText = booking.eventTitle || "Premium Gathering";
                     document.getElementById('slip-user-name').innerText = booking.name;
                     document.getElementById('slip-user-phone').innerText = booking.phone;
@@ -465,7 +520,7 @@
             document.getElementById('slip-modal-overlay').style.display = 'none';
             const lastOrderedSeat = localStorage.getItem('gz_my_last_ordered_seat');
             if(lastOrderedSeat && appData.bookings[lastOrderedSeat]) {
-                appData.bookings[lastOrderedSeat].showSlipToUser = false; // একবার দেখে ফেললে বন্ধ
+                appData.bookings[lastOrderedSeat].showSlipToUser = false; 
                 saveData();
             }
         }
@@ -480,7 +535,6 @@
             });
         }
 
-        /* --- एडमीन इভেন্ট ক্রিয়েট, এডিট ও ডিলিট মেকানিজম --- */
         function createOrUpdateEvent() {
             const title = document.getElementById('ev-title').value.trim();
             const desc = document.getElementById('ev-desc').value.trim();
@@ -490,11 +544,9 @@
             if(!title || !fee) return alert('নাম ও এন্ট্রি ফি দিন!');
 
             if(editIdx !== "") {
-                // আপডেট লজিক
                 appData.events[editIdx] = { title, desc, fee };
                 alert('ইভেন্টটি সফলভাবে আপডেট হয়েছে!');
             } else {
-                // নতুন ইভেন্ট
                 appData.events.push({ title, desc, fee });
                 alert('নতুন ইভেন্ট তৈরি হয়েছে!');
             }
@@ -534,7 +586,6 @@
             document.getElementById('event-cancel-edit-btn').style.display = "none";
         }
 
-        /* --- এডমিন সিট অ্যাকশন কন্ট্রোল --- */
         function openAdminSeatModal(seatId) {
             document.getElementById('admin-target-seat-id').value = seatId;
             document.getElementById('admin-modal-seat-title').innerText = "সিট নাম্বার: " + seatId;
@@ -600,21 +651,30 @@
             if(appData.bookings[seatId]) {
                 appData.bookings[seatId].status = 'booked';
                 appData.bookings[seatId].byAdmin = appData.adminUser || "Admin";
-                appData.bookings[seatId].showSlipToUser = true; // ইউজারের স্লিপ জেনারেট ট্র্রিগার ট্রু
+                appData.bookings[seatId].showSlipToUser = true; 
                 saveData();
                 renderAdminPanel();
                 alert(`${seatId} বুকিং এপ্রুভ করা হয়েছে এবং ইউজারের স্লিপ রেডি!`);
             }
         }
 
+        // অ্যাডমিন প্যানেল থেকে লাইভ থিম সেভ করার লজিক
+        function saveAppTheme() {
+            const selectedTheme = document.getElementById('admin-theme-select').value;
+            appData.theme = selectedTheme;
+            saveData();
+            applyTheme(selectedTheme);
+            alert(`অ্যাপ থিম সফলভাবে '${selectedTheme.toUpperCase()}' আপডেট করা হয়েছে এবং এটি এখন সকল ইউজার দেখতে পাবেন!`);
+        }
+
         function renderAdminPanel() {
             document.getElementById('admin-notice-input').value = appData.notice;
+            document.getElementById('admin-theme-select').value = appData.theme || "blue";
             generateSeats('admin-seat-layout', true);
             
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('today-visitors-count').innerText = appData.visitorLog?.[today] || 0;
 
-            // ইভেন্ট ম্যানেজমেন্ট লিস্ট রেন্ডার
             const evMgmtContainer = document.getElementById('admin-events-management-list');
             evMgmtContainer.innerHTML = '';
             appData.events.forEach((ev, idx) => {
