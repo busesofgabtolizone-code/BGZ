@@ -36,7 +36,7 @@
 
         /* Premium Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.3); z-index: 99999; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(8px); }
-        .modal-box { background: #ffffff; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); border-top: 6px solid #2563eb; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-box { background: #ffffff; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); border-top: 6px solid #2563eb; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-height: 90vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .screen { display: none; }
@@ -99,9 +99,27 @@
         .badge-pending { background: #fef3c7; color: #d97706; }
         .badge-booked { background: #fef2f2; color: #ef4444; }
         .badge-fixed { background: #e0f2fe; color: #0369a1; }
+
+        /* Admin List Custom UI */
+        .admin-member-card { display: flex; align-items: center; gap: 15px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 14px; margin-bottom: 12px; }
+        .admin-member-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; background: #e2e8f0; }
+        .admin-member-info { flex: 1; }
+        .admin-member-info h4 { font-size: 15px; font-weight: 700; color: var(--text); }
+        .admin-member-info p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
     </style>
 </head>
 <body>
+
+    <div id="admin-list-popup-overlay" class="modal-overlay">
+        <div class="modal-box" style="border-top-color: #ef4444;">
+            <h3 style="color:#ef4444; text-align:center; margin-bottom:16px; font-size:18px;">👥 আমাদের এডমিন প্যানেল লিস্ট</h3>
+            
+            <div id="user-admin-list-container" style="max-height: 400px; overflow-y: auto; padding-right: 4px;">
+                </div>
+
+            <button class="btn btn-danger" style="margin-top:16px;" onclick="closeAdminListPopup()">বন্ধ করুন</button>
+        </div>
+    </div>
 
     <div id="slip-modal-overlay" class="modal-overlay">
         <div class="modal-box" style="border-top-color: #10b981; max-width: 410px;">
@@ -172,7 +190,10 @@
                     <h3>Buses of Gabtoli Zone</h3>
                     <a href="https://www.facebook.com/share/g/1BpQMs5Nuu/" target="_blank" class="fb-group-btn">👥 ফেসবুক গ্রুপ</a>
                 </div>
-                <span class="admin-link" onclick="showScreen('admin-login-screen')">Admin Panel Access</span>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
+                    <span class="admin-link" style="background: #fee2e2; color: #ef4444;" onclick="openAdminListPopup()">🔴 Admin Panel List</span>
+                    <span class="admin-link" onclick="showScreen('admin-login-screen')">Admin Access</span>
+                </div>
             </div>
             <div id="user-events-container"></div>
         </div>
@@ -218,6 +239,22 @@
                     <h3 style="color:#ef4444; font-size:18px;" id="admin-welcome-title">Admin Control</h3>
                     <span class="logout-link" onclick="logoutAdmin()">Logout</span>
                 </div>
+            </div>
+
+            <div style="background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom:24px; box-shadow:var(--card-shadow);">
+                <h4 id="admin-member-form-title" style="font-size:15px; font-weight:700; color:#ef4444; margin-bottom:12px;">👥 এডমিন প্যানেল লিস্ট ম্যানেজমেন্ট</h4>
+                <input type="hidden" id="edit-member-index">
+                <div class="form-group"><input type="text" id="mem-name" placeholder="এডমিনের নাম"></div>
+                <div class="form-group"><input type="tel" id="mem-phone" placeholder="মোবাইল নাম্বার"></div>
+                <div class="form-group">
+                    <label>ছবির লিংক (অনলাইন URL বা খালি রাখুন)</label>
+                    <input type="text" id="mem-photo" placeholder="https://example.com/photo.jpg">
+                </div>
+                <button id="member-submit-btn" class="btn btn-danger" style="margin-top:0;" onclick="createOrUpdateAdminMember()">মেম্বার ডাটা সেভ করুন</button>
+                <button id="member-cancel-edit-btn" class="btn" style="background:#cbd5e1; color:#0f172a; margin-top:8px; display:none;" onclick="resetMemberForm()">এডিট ক্যানসেল</button>
+                
+                <h4 style="margin-top:20px; margin-bottom:10px; font-size:13px; color:var(--text-muted);">বর্তমান এডমিন মেম্বারদের লিস্ট:</h4>
+                <div id="admin-members-management-list"></div>
             </div>
 
             <div style="background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom:24px; box-shadow:var(--card-shadow);">
@@ -276,19 +313,27 @@
 
     <script>
         let appData = JSON.parse(localStorage.getItem('gz_app_data')) || {
-            notice: "Buses Of Gabtoli Zone-এ আপনাকে স্বাগতম!",
+            notice: "Buses Of Gabtoli Zone-এ আপনাকে স্বাগত!",
             noticeId: Date.now(),
             events: [{title: "Gabtoli Grand Tour 2026", desc: "সকল মেম্বারদের নিয়ে বিশেষ গ্যাদারিং ও ট্যুর।", fee: "1500"}],
             bookings: {}, 
             visitorLog: {}, 
             activeSession: null,
             adminUser: null,
-            theme: "blue" // ডিফল্ট থিম কালার ভ্যালু
+            theme: "blue",
+            adminMembers: [
+                {name: "প্রধান এডমিন", phone: "01731222108", photo: ""},
+                {name: "সহকারী এডমিন", phone: "01XXXXXXXXX", photo: ""}
+            ] // ডিফল্ট ডেমো এডমিন লিস্ট ডাটা
         };
+
+        // যদি পুরোনো ডাটায় adminMembers না থাকে তবে তা যুক্ত করা
+        if(!appData.adminMembers) {
+            appData.adminMembers = [{name: "প্রধান এডমিন", phone: "01731222108", photo: ""}];
+        }
 
         let sessionCheckedSlip = false;
 
-        // থিম কালার ম্যাপ কনফিগারেশন
         const themeStyles = {
             blue: {
                 bg: "#cbd5e1",
@@ -307,7 +352,6 @@
             }
         };
 
-        // থিম অ্যাপ্লাই করার ফাংশন
         function applyTheme(themeName) {
             const selectedTheme = themeStyles[themeName] || themeStyles.blue;
             document.documentElement.style.setProperty('--bg-color', selectedTheme.bg);
@@ -319,7 +363,6 @@
             localStorage.setItem('gz_app_data', JSON.stringify(appData));
         }
 
-        // লাইভ ব্যাকগ্রাউন্ড ডাটা ও থিম রিয়েল-টাইম সিঙ্ক
         setInterval(() => {
             let latestData = JSON.parse(localStorage.getItem('gz_app_data'));
             if (latestData) {
@@ -345,7 +388,6 @@
             }
         }
 
-        // ইনিশিয়াল লোডেই সেভ করা থিম চালু করা
         applyTheme(appData.theme || 'blue');
 
         setTimeout(() => {
@@ -421,7 +463,7 @@
                             <h3>${ev.title}</h3>
                             <p style="font-size:13px; color:var(--text-muted); margin-top:6px; line-height:1.4;">${ev.desc}</p>
                             <p class="event-fee">${ev.fee} ৳</p>
-                            <button class="btn" style="margin-top:6px;" onclick="openBookingForm(${idx})">বुकিং করুন / সিট প্ল্যান</button>
+                            <button class="btn" style="margin-top:6px;" onclick="openBookingForm(${idx})">বুকিং করুন / সিট প্ল্যান</button>
                         </div>
                     </div>`;
             });
@@ -606,7 +648,7 @@
                 `;
                 
                 if (seatData.status === 'fixed') {
-                    infoBox.innerHTML += `<br><span style="color:#ef4444; font-weight:700;">⚠️ এই সিটটি FIXED করা। ক্যানসেল অযোগ্য!</span>`;
+                    infoBox.innerHTML += `<br><span style="color:#ef4444; font-weight:700;">⚠️ এই সিটটি FIXED করা। ক্যানсел অযোগ্য!</span>`;
                     cancelBtn.style.display = 'none';
                 } else { cancelBtn.style.display = 'block'; }
             } else { infoBox.style.display = 'none'; cancelBtn.style.display = 'block'; }
@@ -658,7 +700,6 @@
             }
         }
 
-        // অ্যাডমিন প্যানেল থেকে লাইভ থিম সেভ করার লজিক
         function saveAppTheme() {
             const selectedTheme = document.getElementById('admin-theme-select').value;
             appData.theme = selectedTheme;
@@ -667,6 +708,98 @@
             alert(`অ্যাপ থিম সফলভাবে '${selectedTheme.toUpperCase()}' আপডেট করা হয়েছে এবং এটি এখন সকল ইউজার দেখতে পাবেন!`);
         }
 
+        function updateNotice() {
+            const newNotice = document.getElementById('admin-notice-input').value.trim();
+            if(!newNotice) return alert('নোটিশ লিখুন!');
+            appData.notice = newNotice;
+            appData.noticeId = Date.now();
+            saveData();
+            alert('নোটিশ আপডেট হয়েছে!');
+        }
+
+        /* --- নতুন যুক্ত করা এডমিন মেম্বার লিস্টের ডাইনামিক ফাংশনসমূহ --- */
+
+        // ইউজার মোডে পপ-আপ ওপেন করার লজিক (লাল বোতামের জন্য)
+        function openAdminListPopup() {
+            const container = document.getElementById('user-admin-list-container');
+            container.innerHTML = '';
+            
+            if(!appData.adminMembers || appData.adminMembers.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#64748b; font-size:14px; padding:10px;">কোনো এডমিন মেম্বার ডাটা পাওয়া যায়নি।</p>`;
+            } else {
+                appData.adminMembers.forEach(member => {
+                    // যদি মেম্বারের ছবি না থাকে তবে ডিফল্ট আইকন/প্লেসহোল্ডার বসবে
+                    const photoSrc = member.photo ? member.photo : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                    container.innerHTML += `
+                        <div class="admin-member-card">
+                            <img src="${photoSrc}" class="admin-member-avatar" alt="Admin">
+                            <div class="admin-member-info">
+                                <h4>${member.name}</h4>
+                                <p>📱 ${member.phone}</p>
+                            </div>
+                        </div>`;
+                });
+            }
+            document.getElementById('admin-list-popup-overlay').style.display = 'flex';
+        }
+
+        function closeAdminListPopup() {
+            document.getElementById('admin-list-popup-overlay').style.display = 'none';
+        }
+
+        // এডমিন প্যানেল থেকে নতুন মেম্বার তৈরি বা আপডেট করা
+        function createOrUpdateAdminMember() {
+            const name = document.getElementById('mem-name').value.trim();
+            const phone = document.getElementById('mem-phone').value.trim();
+            const photo = document.getElementById('mem-photo').value.trim();
+            const editIdx = document.getElementById('edit-member-index').value;
+
+            if(!name || !phone) return alert('দয়া করে নাম ও মোবাইল নাম্বারটি দিন!');
+
+            if(editIdx !== "") {
+                appData.adminMembers[editIdx] = { name, phone, photo };
+                alert('মেম্বার ইনফো সফলভাবে আপডেট হয়েছে!');
+            } else {
+                appData.adminMembers.push({ name, phone, photo });
+                alert('নতুন এডমিন মেম্বার যুক্ত করা হয়েছে!');
+            }
+
+            saveData();
+            resetMemberForm();
+            renderAdminPanel();
+        }
+
+        function editAdminMember(idx) {
+            const member = appData.adminMembers[idx];
+            document.getElementById('edit-member-index').value = idx;
+            document.getElementById('mem-name').value = member.name;
+            document.getElementById('mem-phone').value = member.phone;
+            document.getElementById('mem-photo').value = member.photo;
+
+            document.getElementById('admin-member-form-title').innerText = "📝 মেম্বার ডাটা এডিট মোড";
+            document.getElementById('member-submit-btn').innerText = "আপডেট করুন";
+            document.getElementById('member-cancel-edit-btn').style.display = "block";
+        }
+
+        function deleteAdminMember(idx) {
+            if(confirm('আপনি কি নিশ্চিতভাবে এই মেম্বারকে প্যানেল লিস্ট থেকে ডিলিট করতে চান?')) {
+                appData.adminMembers.splice(idx, 1);
+                saveData();
+                renderAdminPanel();
+            }
+        }
+
+        function resetMemberForm() {
+            document.getElementById('edit-member-index').value = "";
+            document.getElementById('mem-name').value = "";
+            document.getElementById('mem-phone').value = "";
+            document.getElementById('mem-photo').value = "";
+            document.getElementById('admin-member-form-title').innerText = "👥 এডমিন প্যানেল লিস্ট ম্যানেজমেন্ট";
+            document.getElementById('member-submit-btn').innerText = "মেম্বার ডাটা সেভ করুন";
+            document.getElementById('member-cancel-edit-btn').style.display = "none";
+        }
+
+
         function renderAdminPanel() {
             document.getElementById('admin-notice-input').value = appData.notice;
             document.getElementById('admin-theme-select').value = appData.theme || "blue";
@@ -674,6 +807,20 @@
             
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('today-visitors-count').innerText = appData.visitorLog?.[today] || 0;
+
+            // এডমিন প্যানেলে মেম্বার লিস্ট রেন্ডার করা (বাড়ানো/কমানোর জন্য)
+            const memMgmtContainer = document.getElementById('admin-members-management-list');
+            memMgmtContainer.innerHTML = '';
+            appData.adminMembers.forEach((member, idx) => {
+                memMgmtContainer.innerHTML += `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:13px; font-weight:700;">${member.name} (${member.phone})</span>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn btn-sm" style="background:#3b82f6;" onclick="editAdminMember(${idx})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteAdminMember(${idx})">Delete</button>
+                        </div>
+                    </div>`;
+            });
 
             const evMgmtContainer = document.getElementById('admin-events-management-list');
             evMgmtContainer.innerHTML = '';
@@ -726,15 +873,6 @@
 
             if(!hasRequests) reqList.innerHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:14px;">কোনো পেন্ডিং রিকোয়েস্ট নেই।</p>';
             if(!hasHistory) allHistoryList.innerHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:12px;">কোনো বুকিং বা অ্যাকশন ডাটা নেই।</p>';
-        }
-
-        function updateNotice() {
-            const newNotice = document.getElementById('admin-notice-input').value.trim();
-            if(!newNotice) return alert('নোটিশ লিখুন!');
-            appData.notice = newNotice;
-            appData.noticeId = Date.now();
-            saveData();
-            alert('নোটিশ আপডেট হয়েছে!');
         }
     </script>
 </body>
