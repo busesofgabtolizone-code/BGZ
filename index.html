@@ -29,10 +29,10 @@
         body { background-color: var(--bg-color); color: var(--text); padding: 20px 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .app-container { width: 100%; max-width: 450px; min-height: 85vh; background: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
         
-        /* Splash Screen - Text Logo Style */
+        /* Splash Screen */
         #splash-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .app-logo-text { font-size: 42px; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; animation: zoomFade 2.5s ease-in-out infinite; }
-        @keyframes zoomFade { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+        .app-logo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; box-shadow: 0 8px 24px rgba(0,0,0,0.1); animation: zoomFade 2.5s ease-in-out infinite; }
+        @keyframes zoomFade { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.03); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
 
         /* Premium Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.3); z-index: 99999; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(8px); }
@@ -61,7 +61,7 @@
         .app-header { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
         .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; }
         .brand-meta { display: flex; align-items: center; gap: 10px; }
-        .brand-icon-text { width: 42px; height: 42px; background: var(--primary-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; border-radius: 50%; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+        .brand-meta img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; }
         .header-top h3 { font-size: 17px; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .fb-group-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; background: #1877f2; color: white; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px; box-shadow: 0 4px 10px rgba(24, 119, 242, 0.2); transition: transform 0.2s; }
         
@@ -143,8 +143,7 @@
     <div class="app-container">
         
         <div id="splash-screen">
-            <div class="app-logo-text">BGZ</div>
-            <div style="font-size:12px; color:var(--text-muted); margin-top:8px; font-weight:600; letter-spacing:1px;">GABTOLI ZONE</div>
+            <img src="" alt="BGZ Logo" class="app-logo">
         </div>
 
         <div id="admin-login-screen" class="screen">
@@ -159,7 +158,7 @@
             <div class="app-header">
                 <div class="header-top">
                     <div class="brand-meta">
-                        <div class="brand-icon-text">BGZ</div>
+                        <img src="" alt="BGZ">
                         <div>
                             <h3>Buses of Gabtoli Zone</h3>
                             <p style="font-size:11px; color:var(--text-muted);">Premium Booking Portal</p>
@@ -174,7 +173,7 @@
             </div>
 
             <div style="background: #ffffff; border-radius: 18px; overflow: hidden; margin-bottom: 24px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9;">
-                <div style="width:100%; height:110px; background: var(--primary-gradient); display:flex; align-items:center; justify-content:center; color:white; font-size:24px; font-weight:800; letter-spacing:1px;">OFFICIAL TOUR</div>
+                <img src="" style="width:100%; height:150px; object-fit:cover;" alt="Event Banner">
                 <div style="padding:18px;">
                     <h3 style="font-size: 18px; font-weight:700;">পদ্মা সেতু লাক্সারি ডে-ট্যুর ২০২৬</h3>
                     <p style="color: #10b981; font-weight:800; margin: 6px 0; font-size: 19px;">প্যাকেজ ফি: ৮০০ ৳</p>
@@ -220,7 +219,7 @@
             <div class="app-header">
                 <div class="header-top">
                     <div class="brand-meta">
-                        <div class="brand-icon-text" style="background:var(--danger-gradient)">BGZ</div>
+                        <img src="" alt="BGZ Logo">
                         <div>
                             <h3 style="color:#ef4444;" id="admin-welcome-title">Admin Dashboard</h3>
                             <p style="font-size:11px; color:var(--text-muted);">Control & Operations Center</p>
@@ -256,4 +255,9 @@
                 <div id="admin-booking-logs-list" style="font-size:12px; color:var(--text-muted);">কোনো বুকিং রেকর্ড নেই।</div>
             </div>
 
-            <div id="tab-content-reset" class="adm
+            <div id="tab-content-reset" class="admin-tab-content">
+                <h4 style="font-size:14px; color:#ef4444; margin-bottom:8px;">⚙️ অ্যাডভান্সড সিস্টেম রিসেট হাব</h4>
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:15px; line-height:1.4;">ট্যুরের রানিং সিট খালি করতে অথবা ৩০ দিনের হিস্টোরি স্লিপ ক্রিয়েট করতে নিচের সেফটি বাটন ব্যবহার করুন।</p>
+                
+                <button class="btn" style="background:#f59e0b; color:white; box-shadow:none;" onclick="triggerManualSeatReset()">🔄 সিট প্ল্যান রিসেট করুন (নতুন ট্যুর শুরু)</button>
+                <div
