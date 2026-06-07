@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buses of Gabtoli Zone - Premium Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.41.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            --success-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            --danger-gradient: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            --dark-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #f1f5f9;
+            --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --btn-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }
+        body { background-color: #cbd5e1; color: var(--text); padding: 20px 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 450px; min-height: 85vh; background: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+        
+        /* Splash Screen */
+        #splash-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .app-logo { width: 200px; height: auto; max-width: 80%; animation: zoomFade 2.5s ease-in-out infinite; }
+        @keyframes zoomFade { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.03); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+
+        /* Premium Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.3); z-index: 99999; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(8px); }
+        .modal-box { background: #ffffff; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); border-top: 6px solid #2563eb; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .screen { display: none; }
+        .active-screen { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .auth-title { text-align: center; margin: 15px 0 25px 0; font-size: 24px; color: #ef4444; font-weight: 800; letter-spacing: -0.5px; }
+
+        /* Form Controls */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 7px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; color: var(--text); font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #3b82f6; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12); }
+        
+        /* Premium Gradient Buttons */
+        .btn { width: 100%; padding: 14px; background: var(--primary-gradient); color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); margin-top: 12px; box-shadow: var(--btn-shadow); letter-spacing: 0.3px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3); }
+        .btn-success { background: var(--success-gradient); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .btn-danger { background: var(--danger-gradient); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+        .btn-dark { background: var(--dark-gradient); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; margin-top: 0; box-shadow: none; border-radius: 8px; }
+        
+        /* App Header */
+        .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .app-header h3 { font-size: 19px; font-weight: 800; background: linear-gradient(to right, #1e3a8a, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .admin-link { color: #2563eb; font-size: 13px; cursor: pointer; font-weight: 700; background: #f0f6ff; padding: 8px 14px; border-radius: 10px; }
+        .logout-link { color: #ef4444; font-size: 13px; cursor: pointer; font-weight: 700; background: #fef2f2; padding: 6px 12px; border-radius: 8px; }
+
+        /* Stats Dashboard */
+        .stats-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 24px; }
+        .stat-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; text-align: center; box-shadow: var(--card-shadow); }
+        .stat-card p { font-size: 26px; font-weight: 800; color: #2563eb; }
+
+        /* Premium Event Cards */
+        .event-card { background: #ffffff; border-radius: 18px; overflow: hidden; margin-bottom: 24px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9; }
+        .event-img { width: 100%; height: 140px; background: linear-gradient(45deg, #e2e8f0, #cbd5e1); display: flex; justify-content: center; align-items: center; color: #475569; font-size: 13px; font-weight: 700; }
+        .event-body { padding: 18px; }
+        .event-body h3 { font-size: 18px; font-weight: 700; color: var(--text); }
+        .event-fee { color: #10b981; font-weight: 800; margin: 8px 0; font-size: 19px; }
+
+        /* Premium Seat Layout */
+        .seat-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0; }
+        .seat { padding: 12px 0; background: #f1f5f9; color: #475569; text-align: center; cursor: pointer; border-radius: 10px; font-weight: 700; font-size: 13px; transition: all 0.2s; border: 1px solid #e2e8f0; }
+        .seat.selected { background: var(--primary-gradient); color: white; border-color: transparent; }
+        .seat.booked { background: #fef2f2; color: #ef4444; border-color: #fee2e2; cursor: not-allowed; }
+        .seat.pending { background: #fffbeb; color: #b45309; border-color: #fef3c7; cursor: not-allowed; }
+        .seat.fixed { background: var(--dark-gradient); color: white; border-color: transparent; cursor: not-allowed !important; opacity: 0.85; }
+
+        /* Slip Styles */
+        .slip-wrapper { background: #fff; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 20px; color: #000; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .slip-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+        .slip-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+
+        /* Lists Elements */
+        .list-item { background: #ffffff; padding: 16px; border-radius: 14px; margin-bottom: 12px; font-size: 14px; border: 1px solid #e2e8f0; box-shadow: var(--card-shadow); }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; margin-left: 6px; display: inline-block; text-transform: uppercase; }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-booked { background: #fef2f2; color: #ef4444; }
+        .badge-fixed { background: #e0f2fe; color: #0369a1; }
+    </style>
+</head>
+<body>
+
+    <div id="slip-modal-overlay" class="modal-overlay">
+        <div class="modal-box" style="border-top-color: #10b981; max-width: 410px;">
+            <h3 style="color:#10b981; text-align:center; margin-bottom:12px;">🎉 বুকing Approved!</h3>
+            
+            <div id="invoice-slip-capture" class="slip-wrapper">
+                <div class="slip-header">
+                    <h2 style="font-size:18px; font-weight:800;">BUSES OF GABTOLI ZONE</h2>
+                    <p style="font-size:11px; color:#64748b;">Official Booking Slip</p>
+                </div>
+                <div class="slip-row"><span>ইভেন্ট নাম:</span> <b id="slip-event-title">-</b></div>
+                <div class="slip-row"><span>যাত্রীর নাম:</span> <b id="slip-user-name">-</b></div>
+                <div class="slip-row"><span>মোবাইল নাম্বার:</span> <b id="slip-user-phone">-</b></div>
+                <div class="slip-row"><span>সিট নাম্বার:</span> <b id="slip-seat-id" style="color:#1d4ed8; font-size:16px;">-</b></div>
+                <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 10px 0;">
+                <div class="slip-row"><span>মোট ফি:</span> <b id="slip-total-fee">- ৳</b></div>
+                <div class="slip-row"><span>পেইড অ্যামাউন্ট:</span> <b id="slip-paid-fee" style="color:#10b981;">- ৳</b></div>
+                <div class="slip-row"><span>বাকি/ডু অ্যামাউন্ট:</span> <b id="slip-due-fee" style="color:#ef4444;">- ৳</b></div>
+                <div class="slip-row"><span>বিকাশ ট্র্যাকিং ডিজিট:</span> <b id="slip-digits">-</b></div>
+                <div style="text-align:center; margin-top:15px; font-size:10px; color:#94a3b8;">Thank you for travelling with us!</div>
+            </div>
+
+            <button class="btn btn-success" onclick="downloadInvoiceSlip()">📥 DOWNLOAD SLIP (ফোনে সেভ করুন)</button>
+            <button class="btn" style="background:#e2e8f0; color:#0f172a; box-shadow:none; margin-top:10px;" onclick="closeSlipModal()">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <div id="notice-popup-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="color:#2563eb; margin-bottom:12px; font-size:18px;">🔔 নোটিফিকেশন</h3>
+            <p id="popup-notice-text" style="font-size:14px; line-height:1.6; color:#334155;">লোডিং...</p>
+            <button class="btn" style="margin-top:20px;" onclick="closeNoticePopup()">Skip / বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <div id="admin-seat-modal-overlay" class="modal-overlay">
+        <div class="modal-box" style="border-top-color: #ef4444;">
+            <h3 style="color:var(--text); font-weight:800; font-size:18px;">💺 সিট ম্যানেজমেন্ট</h3>
+            <p id="admin-modal-seat-title" style="font-weight:800; color:#2563eb; margin: 6px 0 16px 0;">সিট নাম্বার: </p>
+            <div id="admin-seat-info-box" style="font-size:13px; background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:18px; display:none; border:1px solid #e2e8f0; line-height:1.5;"></div>
+            
+            <input type="hidden" id="admin-target-seat-id">
+            <button class="btn btn-dark" onclick="adminSetSeatStatus('fixed')">🔒 FIXED করুন (স্থায়ী লক)</button>
+            <button class="btn btn-success" onclick="adminSetSeatStatus('booked')">✅ BOOKED করুন</button>
+            <button class="btn btn-danger" id="admin-modal-cancel-btn" onclick="adminSetSeatStatus('cancelled')">❌ CANCEL / সিট খালি করুন</button>
+            <button class="btn" style="background:#e2e8f0; color:#0f172a; box-shadow:none; margin-top:16px;" onclick="closeAdminSeatModal()">ফিরে যান</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <div id="splash-screen">
+            <img src="logo.jpg" alt="BGZ Logo" class="app-logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
+            <div id="alt-logo" style="display:none; font-size: 42px; font-weight: 800; color: #2563eb; letter-spacing: -1px;">BGZ</div>
+        </div>
+
+        <div id="admin-login-screen" class="screen">
+            <h2 class="auth-title">Admin Access Only</h2>
+            <div class="form-group"><label>এডমিন ইউজারনেম</label><input type="text" id="admin-user-input" placeholder="যেমন: BGZ"></div>
+            <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="admin-pass-input" placeholder="••••"></div>
+            <button class="btn btn-danger" onclick="handleAdminLogin()">লগইন করুন</button>
+            <button class="btn" style="background:#e2e8f0; color:#0f172a; box-shadow:none;" onclick="showScreen('user-panel')">ইউজার মোডে ফিরুন</button>
+        </div>
+
+        <div id="user-panel" class="screen">
+            <div class="app-header">
+                <div><h3>Buses of Gabtoli Zone</h3></div>
+                <span class="admin-link" onclick="showScreen('admin-login-screen')">Admin Panel</span>
+            </div>
+            <div id="user-events-container"></div>
+        </div>
+
+        <div id="booking-screen" class="screen">
+            <div class="app-header">
+                <h3 style="font-size:18px;">সিট বুকিং ফরম</h3>
+                <span style="cursor:pointer; color:#2563eb; font-weight:700; font-size:14px;" onclick="showScreen('user-panel')">ফিরে যান</span>
+            </div>
+            <form id="booking-form" onsubmit="submitBookingRequest(event)">
+                <input type="hidden" id="selected-event-index">
+                <div class="form-group"><label>আপনার নাম</label><input type="text" id="bk-name" placeholder="নাম লিখুন" required></div>
+                <div class="form-group"><label>মোবাইল নাম্বার</label><input type="tel" id="bk-phone" placeholder="01XXXXXXXXX" required></div>
+                <div class="form-group"><label>ঠিকানা</label><input type="text" id="bk-address" placeholder="আপনার ঠিকানা" required></div>
+                
+                <label style="font-size:13px; color:var(--text-muted); font-weight:700;">সিট সিলেক্ট করুন (নীল = ফিক্সড, লাল = বুকড)</label>
+                <div class="seat-container" id="user-seat-layout"></div>
+                <input type="hidden" id="selected-seat">
+
+                <div style="background:#f8fafc; padding:16px; border-radius:14px; border:1px solid #e2e8f0; margin:20px 0;">
+                    <p style="color:#b45309; font-size:14px; margin-bottom:6px; font-weight:700;"><strong>💸 পেমেন্ট গেটওয়ে (বাকি রাখার সুযোগ):</strong></p>
+                    <p style="font-size:12px; color:var(--text-muted); line-height:1.4;">বিকাশ/নগদ সেন্ড মানি করুন (সর্বনিম্ন <b>১০০ টাকা</b> দিতেই হবে):</p>
+                    <p style="font-size:20px; color:#10b981; font-weight:800; margin:6px 0;">01731-222108</p>
+                    
+                    <div class="form-group" style="margin-top:12px;">
+                        <label>কত টাকা পেমেন্ট করেছেন? (Min: 100 ৳)</label>
+                        <input type="number" id="bk-amount" min="100" placeholder="যেমন: 500" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>বিকাশ/নগদ নাম্বারের শেষ ২ ডিজিট:</label>
+                        <input type="number" id="bk-last-digits" placeholder="যেমন: 45" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">রিকোয়েস্ট জমা দিন</button>
+            </form>
+        </div>
+
+        <div id="admin-panel" class="screen">
+            <div class="app-header">
+                <h3 style="color:#ef4444; font-size:18px;" id="admin-welcome-title">Admin Control</h3>
+                <span class="logout-link" onclick="logoutAdmin()">Logout</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><h5>আজকের মোট ভিজিটর</h5><p id="today-visitors-count">0</p></div>
+            </div>
+
+            <div style="background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom:24px; box-shadow:var(--card-shadow);">
+                <h4 style="font-size:15px; font-weight:700;">সরাসরি সিট কন্ট্রোল (A1-J4)</h4>
+                <div class="seat-container" id="admin-seat-layout"></div>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <h4 style="margin-bottom: 12px; font-size:15px; font-weight:700;">পেন্ডিং রিকোয়েস্ট সমূহ</h4>
+                <div id="admin-requests-list"></div>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <h4 style="margin-bottom: 12px; font-size:15px; font-weight:700;">সকল বুকিং ও অ্যাকশন হিস্টোরি</h4>
+                <div id="admin-all-history-list" style="max-height:250px; overflow-y:auto; border:1px solid #e2e8f0; padding:8px; border-radius:12px; background:#fff;"></div>
+            </div>
+
+            <div style="margin-bottom:24px; background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow:var(--card-shadow);">
+                <h4 style="margin-bottom: 12px; font-size:15px; font-weight:700;">নোটিশ বোর্ড আপডেট</h4>
+                <div class="form-group" style="margin-bottom:12px;"><input type="text" id="admin-notice-input" placeholder="নতুন নোটিশ লিখুন"></div>
+                <button class="btn" style="margin-top:0;" onclick="updateNotice()">নোটিশ পাবলিশ করুন</button>
+            </div>
+
+            <div style="margin-bottom:24px; background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow:var(--card-shadow);">
+                <h4 id="event-form-title" style="margin-bottom: 12px; font-size:15px; font-weight:700; color:#2563eb;">নতুন ইভেন্ট তৈরি করুন</h4>
+                <input type="hidden" id="edit-event-index">
+                <div class="form-group"><input type="text" id="ev-title" placeholder="ইভেন্টের নাম"></div>
+                <div class="form-group"><textarea id="ev-desc" placeholder="বিবরণ ও তথ্যাাদি"></textarea></div>
+                <div class="form-group" style="margin-bottom:12px;"><input type="number" id="ev-fee" placeholder="এন্ট্রি ফি (টাকা)"></div>
+                <button id="event-submit-btn" class="btn btn-success" style="margin-top:0;" onclick="createOrUpdateEvent()">ইভেন্ট লাইভ করুন</button>
+                <button id="event-cancel-edit-btn" class="btn" style="background:#cbd5e1; color:#0f172a; margin-top:8px; display:none;" onclick="resetEventForm()">এডিট ক্যানসেল</button>
+                
+                <h4 style="margin-top:20px; margin-bottom:10px; font-size:13px; color:var(--text-muted);">বর্তমান ইভেন্টসমূহের লিস্ট:</h4>
+                <div id="admin-events-management-list"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let appData = JSON.parse(localStorage.getItem('gz_app_data')) || {
+            notice: "Buses Of Gabtoli Zone-এ আপনাকে স্বাগতম!",
+            noticeId: Date.now(),
+            events: [{title: "Gabtoli Grand Tour 2026", desc: "সকল মেম্বারদের নিয়ে বিশেষ গ্যাদারিং ও ট্যুর।", fee: "1500"}],
+            bookings: {}, 
+            visitorLog: {}, 
+            activeSession: null,
+            adminUser: null
+        };
+
+        // ইউজারের ফোনে ডাউনলোড করা হয়ে গেলে স্লিপ ট্র্যাকিং স্টেট ক্লিয়ার করার জন্য
+        let sessionCheckedSlip = false;
+
+        function saveData() {
+            localStorage.setItem('gz_app_data', JSON.stringify(appData));
+        }
+
+        // লাইভ ব্যাকগ্রাউন্ড নোটিশ চেক
+        setInterval(() => {
+            let latestData = JSON.parse(localStorage.getItem('gz_app_data'));
+            if (latestData && latestData.noticeId !== appData.noticeId) {
+                appData.notice = latestData.notice;
+                appData.noticeId = latestData.noticeId;
+                triggerNoticePopup(true); 
+            }
+        }, 1500);
+
+        function trackVisitor() {
+            const today = new Date().toISOString().split('T')[0];
+            if (!sessionStorage.getItem('gz_counted_visit')) {
+                if (!appData.visitorLog) appData.visitorLog = {};
+                appData.visitorLog[today] = (appData.visitorLog[today] || 0) + 1;
+                saveData();
+                sessionStorage.setItem('gz_counted_visit', 'true');
+            }
+        }
+
+        setTimeout(() => {
+            document.getElementById('splash-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.display = 'none';
+                trackVisitor();
+                checkSession();
+                triggerNoticePopup(false);
+                checkForApprovedSlip(); // ইউজার এপ্রুভ স্লিপ ট্র্যাকিং রেন্ডার
+            }, 500);
+        }, 3000);
+
+        function triggerNoticePopup(forceOpen = false) {
+            const lastSkippedId = sessionStorage.getItem('gz_last_skipped_notice_id');
+            if (appData.notice) {
+                if (forceOpen || lastSkippedId != appData.noticeId) {
+                    document.getElementById('popup-notice-text').innerText = appData.notice;
+                    document.getElementById('notice-popup-overlay').style.display = 'flex';
+                }
+            }
+        }
+
+        function closeNoticePopup() {
+            document.getElementById('notice-popup-overlay').style.display = 'none';
+            sessionStorage.setItem('gz_last_skipped_notice_id', appData.noticeId);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+            if(screenId === 'user-panel') renderUserEvents();
+            if(screenId === 'admin-panel') renderAdminPanel();
+        }
+
+        function checkSession() {
+            if (appData.activeSession === 'admin') {
+                document.getElementById('admin-welcome-title').innerText = `Control: ${appData.adminUser}`;
+                showScreen('admin-panel');
+            } else {
+                showScreen('user-panel');
+            }
+        }
+
+        function handleAdminLogin() {
+            const user = document.getElementById('admin-user-input').value.trim();
+            const pass = document.getElementById('admin-pass-input').value;
+            if (user === "BGZ" && pass === "1373") {
+                appData.activeSession = 'admin';
+                appData.adminUser = "Admin (BGZ)";
+                saveData();
+                showScreen('admin-panel');
+                document.getElementById('admin-user-input').value = '';
+                document.getElementById('admin-pass-input').value = '';
+            } else { alert('ভুল এডমিন ইউজারনেম বা পাসওয়ার্ড!'); }
+        }
+
+        function logoutAdmin() {
+            appData.activeSession = null;
+            appData.adminUser = null;
+            saveData();
+            showScreen('user-panel');
+        }
+
+        function renderUserEvents() {
+            const container = document.getElementById('user-events-container');
+            container.innerHTML = '';
+            appData.events.forEach((ev, idx) => {
+                container.innerHTML += `
+                    <div class="event-card">
+                        <div class="event-img">Buses of Gabtoli Zone Premium Event</div>
+                        <div class="event-body">
+                            <h3>${ev.title}</h3>
+                            <p style="font-size:13px; color:var(--text-muted); margin-top:6px; line-height:1.4;">${ev.desc}</p>
+                            <p class="event-fee">${ev.fee} ৳</p>
+                            <button class="btn" style="margin-top:6px;" onclick="openBookingForm(${idx})">বুকিং করুন / সিট প্ল্যান</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function openBookingForm(eventIdx) {
+            document.getElementById('selected-event-index').value = eventIdx;
+            showScreen('booking-screen');
+            generateSeats('user-seat-layout', false);
+        }
+
+        const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+        function generateSeats(containerId, isAdmin = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            rows.forEach(row => {
+                for(let i=1; i<=4; i++) {
+                    const seatId = row + i;
+                    const seatDiv = document.createElement('div');
+                    seatDiv.classList.add('seat');
+                    seatDiv.innerText = seatId;
+
+                    const status = appData.bookings[seatId]?.status;
+                    if(status === 'booked') seatDiv.classList.add('booked');
+                    else if(status === 'pending') seatDiv.classList.add('pending');
+                    else if(status === 'fixed') seatDiv.classList.add('fixed');
+
+                    if(isAdmin) { seatDiv.onclick = () => openAdminSeatModal(seatId); } 
+                    else { if(!status) seatDiv.onclick = () => selectUserSeat(seatId, seatDiv); }
+                    container.appendChild(seatDiv);
+                }
+            });
+        }
+
+        function selectUserSeat(seatId, element) {
+            document.querySelectorAll('#user-seat-layout .seat.selected').forEach(s => s.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selected-seat').value = seatId;
+        }
+
+        // ইউজার বুকিং সাবমিট লজিক
+        function submitBookingRequest(e) {
+            e.preventDefault();
+            const seatId = document.getElementById('selected-seat').value;
+            const eventIdx = document.getElementById('selected-event-index').value;
+            const paidAmt = parseInt(document.getElementById('bk-amount').value);
+            
+            if(!seatId) { alert('অনুগ্রহ করে একটি সিট সিলেক্ট করুন!'); return; }
+            
+            const selectedEvent = appData.events[eventIdx];
+            const totalFee = parseInt(selectedEvent.fee);
+
+            if(paidAmt > totalFee) { alert(`পেমেন্ট ইভেন্ট ফি ${totalFee} ৳ এর বেশি হতে পারবে না!`); return; }
+
+            appData.bookings[seatId] = {
+                status: 'pending',
+                eventTitle: selectedEvent.title,
+                totalFee: totalFee,
+                paid: paidAmt,
+                due: totalFee - paidAmt,
+                name: document.getElementById('bk-name').value,
+                phone: document.getElementById('bk-phone').value,
+                address: document.getElementById('bk-address').value,
+                lastDigits: document.getElementById('bk-last-digits').value,
+                byAdmin: null,
+                showSlipToUser: false // এপ্রুভ হওয়ার পর ট্রু হবে
+            };
+            
+            // ফোন মেমরিতে ট্র্যাকিং সেশন রাখার জন্য লোকাল সেটআপ
+            localStorage.setItem('gz_my_last_ordered_seat', seatId);
+
+            saveData();
+            alert('আপনার বুকিং রিকোয়েস্ট সফলভাবে পাঠানো হয়েছে!');
+            document.getElementById('booking-form').reset();
+            showScreen('user-panel');
+        }
+
+        // ইউজার স্লিপ এপ্রুভাল অটো-পপআপ ডিটেকশন
+        function checkForApprovedSlip() {
+            if(appData.activeSession === 'admin') return;
+            const lastOrderedSeat = localStorage.getItem('gz_my_last_ordered_seat');
+            if(lastOrderedSeat && appData.bookings[lastOrderedSeat]) {
+                const booking = appData.bookings[lastOrderedSeat];
+                if(booking.status === 'booked' && booking.showSlipToUser === true) {
+                    // স্লিপ মেকানিজম রেন্ডার করা
+                    document.getElementById('slip-event-title').innerText = booking.eventTitle || "Premium Gathering";
+                    document.getElementById('slip-user-name').innerText = booking.name;
+                    document.getElementById('slip-user-phone').innerText = booking.phone;
+                    document.getElementById('slip-seat-id').innerText = lastOrderedSeat;
+                    document.getElementById('slip-total-fee').innerText = booking.totalFee;
+                    document.getElementById('slip-paid-fee').innerText = booking.paid;
+                    document.getElementById('slip-due-fee').innerText = booking.due;
+                    document.getElementById('slip-digits').innerText = booking.lastDigits;
+
+                    document.getElementById('slip-modal-overlay').style.display = 'flex';
+                }
+            }
+        }
+
+        function closeSlipModal() {
+            document.getElementById('slip-modal-overlay').style.display = 'none';
+            const lastOrderedSeat = localStorage.getItem('gz_my_last_ordered_seat');
+            if(lastOrderedSeat && appData.bookings[lastOrderedSeat]) {
+                appData.bookings[lastOrderedSeat].showSlipToUser = false; // একবার দেখে ফেললে বন্ধ
+                saveData();
+            }
+        }
+
+        function downloadInvoiceSlip() {
+            const target = document.getElementById('invoice-slip-capture');
+            html2canvas(target, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `BGZ-Booking-Slip-${document.getElementById('slip-seat-id').innerText}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        /* --- एडमीन इভেন্ট ক্রিয়েট, এডিট ও ডিলিট মেকানিজম --- */
+        function createOrUpdateEvent() {
+            const title = document.getElementById('ev-title').value.trim();
+            const desc = document.getElementById('ev-desc').value.trim();
+            const fee = document.getElementById('ev-fee').value.trim();
+            const editIdx = document.getElementById('edit-event-index').value;
+
+            if(!title || !fee) return alert('নাম ও এন্ট্রি ফি দিন!');
+
+            if(editIdx !== "") {
+                // আপডেট লজিক
+                appData.events[editIdx] = { title, desc, fee };
+                alert('ইভেন্টটি সফলভাবে আপডেট হয়েছে!');
+            } else {
+                // নতুন ইভেন্ট
+                appData.events.push({ title, desc, fee });
+                alert('নতুন ইভেন্ট তৈরি হয়েছে!');
+            }
+
+            saveData();
+            resetEventForm();
+            renderAdminPanel();
+        }
+
+        function editEvent(idx) {
+            const ev = appData.events[idx];
+            document.getElementById('edit-event-index').value = idx;
+            document.getElementById('ev-title').value = ev.title;
+            document.getElementById('ev-desc').value = ev.desc;
+            document.getElementById('ev-fee').value = ev.fee;
+
+            document.getElementById('event-form-title').innerText = "📝 ইভেন্ট এডিট মোড";
+            document.getElementById('event-submit-btn').innerText = "আপডেট করুন";
+            document.getElementById('event-cancel-edit-btn').style.display = "block";
+        }
+
+        function deleteEvent(idx) {
+            if(confirm('আপনি কি নিশ্চিতভাবে এই ইভেন্টটি ডিলিট করতে চান?')) {
+                appData.events.splice(idx, 1);
+                saveData();
+                renderAdminPanel();
+            }
+        }
+
+        function resetEventForm() {
+            document.getElementById('edit-event-index').value = "";
+            document.getElementById('ev-title').value = "";
+            document.getElementById('ev-desc').value = "";
+            document.getElementById('ev-fee').value = "";
+            document.getElementById('event-form-title').innerText = "নতুন ইভেন্ট তৈরি করুন";
+            document.getElementById('event-submit-btn').innerText = "ইভেন্ট লাইভ করুন";
+            document.getElementById('event-cancel-edit-btn').style.display = "none";
+        }
+
+        /* --- এডমিন সিট অ্যাকশন কন্ট্রোল --- */
+        function openAdminSeatModal(seatId) {
+            document.getElementById('admin-target-seat-id').value = seatId;
+            document.getElementById('admin-modal-seat-title').innerText = "সিট নাম্বার: " + seatId;
+            
+            const seatData = appData.bookings[seatId];
+            const infoBox = document.getElementById('admin-seat-info-box');
+            const cancelBtn = document.getElementById('admin-modal-cancel-btn');
+
+            if (seatData) {
+                infoBox.style.display = 'block';
+                let addedBy = seatData.byAdmin ? `এডমিন (${seatData.byAdmin})` : `ভিজিটর (${seatData.name})`;
+                infoBox.innerHTML = `
+                    <b>স্ট্যাটাস:</b> ${seatData.status.toUpperCase()}<br>
+                    <b>ইভেন্ট:</b> ${seatData.eventTitle || '-'}<br>
+                    <b>প্যাসেঞ্জার:</b> ${seatData.name} (${seatData.phone})<br>
+                    <b>টাকা:</b> মোট ${seatData.totalFee || 0}৳ | পেইড ${seatData.paid || 0}৳ | বাকি ${seatData.due || 0}৳<br>
+                    <b>অ্যাকশন বাই:</b> ${addedBy}
+                `;
+                
+                if (seatData.status === 'fixed') {
+                    infoBox.innerHTML += `<br><span style="color:#ef4444; font-weight:700;">⚠️ এই সিটটি FIXED করা। ক্যানসেল অযোগ্য!</span>`;
+                    cancelBtn.style.display = 'none';
+                } else { cancelBtn.style.display = 'block'; }
+            } else { infoBox.style.display = 'none'; cancelBtn.style.display = 'block'; }
+
+            document.getElementById('admin-seat-modal-overlay').style.display = 'flex';
+        }
+
+        function closeAdminSeatModal() { document.getElementById('admin-seat-modal-overlay').style.display = 'none'; }
+
+        function adminSetSeatStatus(newStatus) {
+            const seatId = document.getElementById('admin-target-seat-id').value;
+            const currentSeat = appData.bookings[seatId];
+
+            if (currentSeat && currentSeat.status === 'fixed') { alert('এই সিটটি অলরেডি FIXED করা আছে!'); closeAdminSeatModal(); return; }
+
+            if (newStatus === 'cancelled') {
+                delete appData.bookings[seatId];
+                alert(`${seatId} সিটটি খালি করা হয়েছে।`);
+            } else {
+                appData.bookings[seatId] = {
+                    status: newStatus,
+                    eventTitle: currentSeat ? currentSeat.eventTitle : 'Direct Block',
+                    totalFee: currentSeat ? currentSeat.totalFee : 0,
+                    paid: currentSeat ? currentSeat.paid : 0,
+                    due: currentSeat ? currentSeat.due : 0,
+                    name: currentSeat ? currentSeat.name : 'Admin Direct Block',
+                    phone: currentSeat ? currentSeat.phone : '-',
+                    address: currentSeat ? currentSeat.address : '-',
+                    lastDigits: currentSeat ? currentSeat.lastDigits : '-',
+                    byAdmin: appData.adminUser || "Admin",
+                    showSlipToUser: newStatus === 'booked' ? true : false
+                };
+                alert(`${seatId} সিটটি সফলভাবে ${newStatus.toUpperCase()} করা হয়েছে।`);
+            }
+
+            saveData();
+            closeAdminSeatModal();
+            renderAdminPanel();
+        }
+
+        function approveBooking(seatId) {
+            if(appData.bookings[seatId]) {
+                appData.bookings[seatId].status = 'booked';
+                appData.bookings[seatId].byAdmin = appData.adminUser || "Admin";
+                appData.bookings[seatId].showSlipToUser = true; // ইউজারের স্লিপ জেনারেট ট্র্রিগার ট্রু
+                saveData();
+                renderAdminPanel();
+                alert(`${seatId} বুকিং এপ্রুভ করা হয়েছে এবং ইউজারের স্লিপ রেডি!`);
+            }
+        }
+
+        function renderAdminPanel() {
+            document.getElementById('admin-notice-input').value = appData.notice;
+            generateSeats('admin-seat-layout', true);
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('today-visitors-count').innerText = appData.visitorLog?.[today] || 0;
+
+            // ইভেন্ট ম্যানেজমেন্ট লিস্ট রেন্ডার
+            const evMgmtContainer = document.getElementById('admin-events-management-list');
+            evMgmtContainer.innerHTML = '';
+            appData.events.forEach((ev, idx) => {
+                evMgmtContainer.innerHTML += `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:13px; font-weight:700;">${ev.title} (${ev.fee}৳)</span>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn btn-sm" style="background:#3b82f6;" onclick="editEvent(${idx})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteEvent(${idx})">Delete</button>
+                        </div>
+                    </div>`;
+            });
+
+            const reqList = document.getElementById('admin-requests-list'); reqList.innerHTML = '';
+            const allHistoryList = document.getElementById('admin-all-history-list'); allHistoryList.innerHTML = '';
+
+            let hasRequests = false; let hasHistory = false;
+
+            for(let seatId in appData.bookings) {
+                hasHistory = true;
+                const b = appData.bookings[seatId];
+                let badgeClass = b.status === 'fixed' ? 'badge-fixed' : (b.status === 'booked' ? 'badge-booked' : 'badge-pending');
+                let opBy = b.byAdmin ? `Action by: ${b.byAdmin}` : `Requested by Visitor`;
+
+                allHistoryList.innerHTML += `
+                    <div style="border-bottom:1px solid #f1f5f9; padding:10px 0; font-size:13px; line-height:1.4;">
+                        <b>সিট ${seatId}</b> - <span class="badge ${badgeClass}">${b.status.toUpperCase()}</span><br>
+                        নাম: ${b.name} | ফোন: ${b.phone}<br>
+                        টাকা: পেইড ${b.paid}৳ | বাকি ${b.due}৳<br>
+                        <small style="color:#2563eb; font-weight:700;">${opBy}</small>
+                    </div>`;
+
+                if(b.status === 'pending') {
+                    hasRequests = true;
+                    reqList.innerHTML += `
+                        <div class="list-item">
+                            <p style="font-weight:700; margin-bottom:4px;"><b>সিট: ${seatId}</b> <span class="badge badge-pending">Pending</span></p>
+                            <p style="font-size:13px;">ইভেন্ট: <b>${b.eventTitle || '-'}</b></p>
+                            <p style="color:#334155;">নাম: ${b.name} | ফোন: ${b.phone}</p>
+                            <p style="font-size:13px; color:#b45309;">পেইড: <b>${b.paid} ৳</b> | বাকি: <b>${b.due} ৳</b></p>
+                            <p style="font-size:13px; margin-top:2px;">বিকাশ লাস্ট ২ ডিজিট: <span style="color:#10b981; font-weight:800;">${b.lastDigits}</span></p>
+                            <div style="display:flex; gap:10px; margin-top:12px;">
+                                <button class="btn btn-success btn-sm" onclick="approveBooking('${seatId}')">Approve</button>
+                                <button class="btn btn-danger btn-sm" onclick="openAdminSeatModal('${seatId}')">Manage</button>
+                            </div>
+                        </div>`;
+                }
+            }
+
+            if(!hasRequests) reqList.innerHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:14px;">কোনো পেন্ডিং রিকোয়েস্ট নেই।</p>';
+            if(!hasHistory) allHistoryList.innerHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:12px;">কোনো বুকিং বা অ্যাকশন ডাটা নেই।</p>';
+        }
+
+        function updateNotice() {
+            const newNotice = document.getElementById('admin-notice-input').value.trim();
+            if(!newNotice) return alert('নোটিশ লিখুন!');
+            appData.notice = newNotice;
+            appData.noticeId = Date.now();
+            saveData();
+            alert('নোটিশ আপডেট হয়েছে!');
+        }
+    </script>
+</body>
+</html>
