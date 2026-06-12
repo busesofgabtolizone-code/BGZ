@@ -29,7 +29,7 @@
         body { background-color: var(--bg-color); color: var(--text); padding: 20px 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.3s ease; }
         .app-container { width: 100%; max-width: 450px; min-height: 85vh; background: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
         
-        /* New Global Website Entrance Loading Spinner */
+        /* Website Entrance Loading Spinner */
         #global-entrance-loader { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: #ffffff; z-index: 999999; display: flex; flex-direction: column; 
@@ -307,7 +307,7 @@
 
             <div style="margin-bottom:24px;">
                 <h4 style="margin-bottom: 12px; font-size:15px; font-weight:700;">সকল বুকিং ও অ্যাকশন হিস্টোরি</h4>
-                <div id="admin-all-history-list" style="max-height:250px; overflow-y:auto; border:1px solid #e2e8f0; padding:8px; border-radius:12px; background:#fff;"></div>
+                <div id="admin-all-history-list" style="max-height:300px; overflow-y:auto; border:1px solid #e2e8f0; padding:10px; border-radius:12px; background:#fff; display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
 
             <div style="margin-bottom:24px; background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0;">
@@ -330,17 +330,18 @@
     </div>
 
     <script>
-        // Shared Realtime Cloud Storage API Bulk Config
-        const KVDB_URL = "https://kvdb.io/MN876wP8S9YstGq8mU4J4K/bgz_shared_data";
+        // Secure Unique App Endpoint URL (Prevents Overwriting Bugs)
+        const KVDB_URL = "https://kvdb.io/MN876wP8S9YstGq8mU4J4K/bgz_live_v2_prod";
 
+        // Memory Safety Default Structure
         let appData = {
             notice: "Buses Of Gabtoli Zone-এ আপনাকে স্বাগত!",
             noticeId: Date.now(),
-            events: [{title: "Gabtoli Grand Tour 2026", desc: "সকল মেম্বারদের নিয়ে বিশেষ গ্যাদারিং ও ট্যুর।", fee: "1500"}],
+            events: [],
             bookings: {}, 
             visitorLog: {}, 
             theme: "blue",
-            adminMembers: [{name: "প্রধান এডমিন", phone: "01731222108", photo: ""}]
+            adminMembers: []
         };
 
         let selectedSeatsArray = [];
@@ -376,7 +377,10 @@
                 let res = await fetch(KVDB_URL);
                 if (res.status === 200) {
                     let cloudData = await res.json();
-                    if (cloudData && cloudData.events) {
+                    if (cloudData && typeof cloudData === 'object') {
+                        if (!cloudData.events) cloudData.events = [];
+                        if (!cloudData.bookings) cloudData.bookings = {};
+                        if (!cloudData.adminMembers) cloudData.adminMembers = [];
                         appData = cloudData;
                         return true;
                     }
@@ -385,7 +389,6 @@
             return false;
         }
 
-        // Realtime Live Engine - Ensures instant UI update across screens
         async function triggerLiveUpdateEngine() {
             let activeScreenId = document.querySelector('.screen.active-screen')?.id;
             if (activeScreenId === 'booking-screen' && selectedSeatsArray.length > 0) return; 
@@ -400,8 +403,7 @@
             }
         }
 
-        // 2.5s Sync Loop
-        setInterval(triggerLiveUpdateEngine, 2500);
+        setInterval(triggerLiveUpdateEngine, 2000);
 
         async function trackVisitor() {
             const today = new Date().toISOString().split('T')[0];
@@ -413,13 +415,10 @@
             }
         }
 
-        // Initialization with forced database pulling sequence
         window.addEventListener('DOMContentLoaded', async () => {
-            // Force pull data before hiding loading screens to avoid un-synced data flash
             await pullFromCloud();
             applyTheme(appData.theme || 'blue');
 
-            // Hide the website loader and launch dashboard
             const entranceLoader = document.getElementById('global-entrance-loader');
             if (entranceLoader) {
                 entranceLoader.style.opacity = '0';
@@ -475,6 +474,12 @@
         function renderUserEvents() {
             const container = document.getElementById('user-events-container');
             container.innerHTML = '';
+            
+            if (!appData.events || appData.events.length === 0) {
+                container.innerHTML = `<p style="text-align:center; font-size:14px; color:var(--text-muted); margin-top:40px;">🔴 এই মুহূর্তে কোনো লাইভ ইভেন্ট বা ট্যুর নেই।</p>`;
+                return;
+            }
+
             appData.events.forEach((ev, idx) => {
                 container.innerHTML += `
                     <div class="event-card">
@@ -702,7 +707,7 @@
                     <b>গ্রুপ সিট:</b> ${seatData.seatsGroup ? seatData.seatsGroup.replace(/\+/g, ', ') : seatId}<br>
                     <b>প্যাসেঞ্জার:</b> ${seatData.name} (${seatData.phone})<br>
                     <b>নোট:</b> <span style="color:#1e3a8a;">${seatData.note || 'N/A'}</span><br>
-                    <b>টাকা:</b> মোট ${seatData.totalFee}৳ | পেইড ${seatData.paid}৳
+                    <b>টাকা:</b> মোট ${seatData.totalFee}৳ | পেইড ${seatData.paid}৳ | বাকি ${seatData.due}৳
                 `;
             } else { infoBox.style.display = 'none'; }
             document.getElementById('admin-seat-modal-overlay').style.display = 'flex';
@@ -774,14 +779,18 @@
 
         function openAdminListPopup() {
             const container = document.getElementById('user-admin-list-container'); container.innerHTML = '';
-            appData.adminMembers.forEach(member => {
-                const photoSrc = member.photo ? member.photo : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-                container.innerHTML += `
-                    <div class="admin-member-card">
-                        <img src="${photoSrc}" class="admin-member-avatar">
-                        <div class="admin-member-info"><h4>${member.name}</h4><p>📱 ${member.phone}</p></div>
-                    </div>`;
-            });
+            if(!appData.adminMembers || appData.adminMembers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; font-size:12px; color:gray;">কোনো মেম্বার নেই</p>';
+            } else {
+                appData.adminMembers.forEach(member => {
+                    const photoSrc = member.photo ? member.photo : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                    container.innerHTML += `
+                        <div class="admin-member-card">
+                            <img src="${photoSrc}" class="admin-member-avatar">
+                            <div class="admin-member-info"><h4>${member.name}</h4><p>📱 ${member.phone}</p></div>
+                        </div>`;
+                });
+            }
             document.getElementById('admin-list-popup-overlay').style.display = 'flex';
         }
 
@@ -826,7 +835,7 @@
             document.getElementById('mem-name').value = "";
             document.getElementById('mem-phone').value = "";
             document.getElementById('mem-photo').value = "";
-            document.getElementById('admin-member-form-title').innerText = "👥 এডমিন প্যানেল লিস্ট ম্যানেজমেন্ট";
+            document.getElementById('admin-member-form-title').innerText = "👥 ایڈমিন প্যানেল লিস্ট ম্যানেজমেন্ট";
             document.getElementById('member-submit-btn').innerText = "মেম্বার ডাটা সেভ করুন";
             document.getElementById('member-cancel-edit-btn').style.display = "none";
         }
@@ -840,28 +849,45 @@
             document.getElementById('today-visitors-count').innerText = appData.visitorLog?.[today] || 0;
 
             const memMgmtContainer = document.getElementById('admin-members-management-list'); memMgmtContainer.innerHTML = '';
-            appData.adminMembers.forEach((m, idx) => {
-                memMgmtContainer.innerHTML += `<div style="background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:700;">${m.name}</span><div style="display:flex; gap:6px;"><button class="btn btn-sm" style="background:#3b82f6;" onclick="editAdminMember(${idx})">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteAdminMember(${idx})">Delete</button></div></div>`;
-            });
+            if(appData.adminMembers) {
+                appData.adminMembers.forEach((m, idx) => {
+                    memMgmtContainer.innerHTML += `<div style="background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:700;">${m.name}</span><div style="display:flex; gap:6px;"><button class="btn btn-sm" style="background:#3b82f6;" onclick="editAdminMember(${idx})">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteAdminMember(${idx})">Delete</button></div></div>`;
+                });
+            }
 
             const evMgmtContainer = document.getElementById('admin-events-management-list'); evMgmtContainer.innerHTML = '';
-            appData.events.forEach((ev, idx) => {
-                evMgmtContainer.innerHTML += `<div style="background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:700;">${ev.title}</span><div style="display:flex; gap:6px;"><button class="btn btn-sm" style="background:#3b82f6;" onclick="editEvent(${idx})">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteEvent(${idx})">Delete</button></div></div>`;
-            });
+            if(appData.events) {
+                appData.events.forEach((ev, idx) => {
+                    evMgmtContainer.innerHTML += `<div style="background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:700;">${ev.title}</span><div style="display:flex; gap:6px;"><button class="btn btn-sm" style="background:#3b82f6;" onclick="editEvent(${idx})">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteEvent(${idx})">Delete</button></div></div>`;
+                });
+            }
 
             const reqList = document.getElementById('admin-requests-list'); reqList.innerHTML = '';
             const allHistoryList = document.getElementById('admin-all-history-list'); allHistoryList.innerHTML = '';
 
             let processedGroups = [];
+            let processedHistoryGroups = [];
 
             for(let seatId in appData.bookings) {
                 const b = appData.bookings[seatId];
                 let badgeClass = b.status === 'fixed' ? 'badge-fixed' : (b.status === 'booked' ? 'badge-booked' : 'badge-pending');
                 
-                allHistoryList.innerHTML += `
-                    <div style="border-bottom:1px solid #f1f5f9; padding:8px 0; font-size:13px;">
-                        <b>সিট ${seatId}</b> - <span class="badge ${badgeClass}">${b.status.toUpperCase()}</span> (${b.name})
-                    </div>`;
+                // Advanced Premium History Layout Modification
+                if (!processedHistoryGroups.includes(b.seatsGroup)) {
+                    processedHistoryGroups.push(b.seatsGroup);
+                    let displaySeats = b.seatsGroup ? b.seatsGroup.replace(/\+/g, ', ') : seatId;
+                    
+                    allHistoryList.innerHTML += `
+                        <div style="border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px; background: #fafafa; font-size: 13px; line-height: 1.5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <b>💺 সিট: ${displaySeats}</b>
+                                <span class="badge ${badgeClass}">${b.status.toUpperCase()}</span>
+                            </div>
+                            <p style="color:#0f172a; font-weight:600;">👤 নাম: ${b.name} (${b.phone})</p>
+                            <p style="color:#10b981; font-weight:700;">💰 পেইড: ${b.paid} ৳ | <span style="color:#ef4444;">বাকি/ডু: ${b.due} ৳</span></p>
+                            <p style="font-size:11px; color:#64748b;">📝 নোট: ${b.note || 'N/A'} | ডিজিট: ${b.lastDigits || '-'}</p>
+                        </div>`;
+                }
 
                 if(b.status === 'pending' && !processedGroups.includes(b.seatsGroup)) {
                     processedGroups.push(b.seatsGroup);
@@ -881,6 +907,7 @@
                 }
             }
             if(reqList.innerHTML === '') reqList.innerHTML = '<p style="text-align:center; font-size:13px; color:var(--text-muted);">কোনো পেন্ডিং রিকোয়েস্ট নেই।</p>';
+            if(allHistoryList.innerHTML === '') allHistoryList.innerHTML = '<p style="text-align:center; font-size:13px; color:gray; padding:10px;">কোনো বুকিং হিস্টোরি পাওয়া যায়নি।</p>';
         }
     </script>
 </body>
