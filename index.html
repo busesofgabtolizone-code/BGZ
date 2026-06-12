@@ -246,7 +246,7 @@
                     <input type="text" id="mem-photo" placeholder="https://example.com/photo.jpg">
                 </div>
                 <button id="member-submit-btn" class="btn btn-danger" style="margin-top:0;" onclick="createOrUpdateAdminMember()">মেম্বার ডাটা সেভ করুন</button>
-                <button id="member-cancel-edit-btn" class="btn" style="background:#cbd5e1; color:#0f172a; margin-top:8px; display:none;" onclick="resetMemberForm()">এডিট ক্যানসেল</button>
+                <button id="member-cancel-edit-btn" class="btn" style="background:#cbd5e1; color:#0f172a; margin-top:8px; display:none;" onclick="resetMemberForm()">এডিট ক্যানсел</button>
                 
                 <h4 style="margin-top:20px; margin-bottom:10px; font-size:13px; color:var(--text-muted);">বর্তমান এডমিন মেম্বারদের লিস্ট:</h4>
                 <div id="admin-members-management-list"></div>
@@ -357,9 +357,12 @@
             localStorage.setItem('gz_app_data', JSON.stringify(appData));
         }
 
+        // লাইভ ডেটা সিঙ্ক এবং অটোমেটিক স্ক্রিন রিফ্রেশ করার জন্য মডিফাইড মেকানিজম
         setInterval(() => {
             let latestData = JSON.parse(localStorage.getItem('gz_app_data'));
             if (latestData) {
+                let needsReRender = false;
+
                 if (latestData.noticeId !== appData.noticeId) {
                     appData.notice = latestData.notice;
                     appData.noticeId = latestData.noticeId;
@@ -368,6 +371,32 @@
                 if (latestData.theme !== appData.theme) {
                     appData.theme = latestData.theme;
                     applyTheme(appData.theme);
+                }
+                if (JSON.stringify(latestData.bookings) !== JSON.stringify(appData.bookings)) {
+                    appData.bookings = latestData.bookings;
+                    needsReRender = true;
+                }
+                if (JSON.stringify(latestData.events) !== JSON.stringify(appData.events)) {
+                    appData.events = latestData.events;
+                    needsReRender = true;
+                }
+                if (JSON.stringify(latestData.adminMembers) !== JSON.stringify(appData.adminMembers)) {
+                    appData.adminMembers = latestData.adminMembers;
+                    needsReRender = true;
+                }
+
+                // কোনো ডেটা পরিবর্তন হলে তাৎক্ষণিকভাবে চোখের সামনে ইন্টারফেস রেন্ডার করবে
+                if (needsReRender) {
+                    if (document.getElementById('user-panel').classList.contains('active-screen')) {
+                        renderUserEvents();
+                    }
+                    if (document.getElementById('booking-screen').classList.contains('active-screen')) {
+                        generateSeats('user-seat-layout', false);
+                    }
+                    if (document.getElementById('admin-panel').classList.contains('active-screen')) {
+                        renderAdminPanel();
+                    }
+                    checkForApprovedSlip(); 
                 }
             }
         }, 1500);
@@ -650,12 +679,10 @@
 
         function closeAdminSeatModal() { document.getElementById('admin-seat-modal-overlay').style.display = 'none'; }
 
-        // মডিফাইড ফাংশন: FIXED সিট ডিলিট বা ক্যানসেল করতে গোপন কোড চেক করবে
         function adminSetSeatStatus(newStatus) {
             const seatId = document.getElementById('admin-target-seat-id').value;
             const currentSeat = appData.bookings[seatId];
 
-            // যদি সিটটি ইতিমধ্যে FIXED থাকে এবং অ্যাডমিন নতুন কোনো স্ট্যাটাস দিতে চায় বা ক্যানসেল করতে চায়
             if (currentSeat && currentSeat.status === 'fixed' && newStatus === 'cancelled') {
                 const secretCode = prompt('এই সিটটি FIXED করা আছে। খালি করতে সিক্রেট কোড দিন:');
                 if (secretCode !== '1373') {
