@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buses of Gabtoli Zone - Realtime Pro</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.41.1/html2canvas.min.js"></script>
 
@@ -25,7 +26,14 @@
             --btn-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }
+        /* ফন্ট ফ্যামিলি ফিক্সড করা হয়েছে এখানে 👇 */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; 
+        }
+        
         body { background-color: var(--bg-color); color: var(--text); padding: 20px 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.3s ease; }
         .app-container { width: 100%; max-width: 450px; min-height: 85vh; background: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
         
@@ -313,7 +321,7 @@
             <div style="margin-bottom:24px; background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0;">
                 <h4 style="margin-bottom: 12px; font-size:15px; font-weight:700;">নোটিশ বোর্ড আপডেট</h4>
                 <div class="form-group"><input type="text" id="admin-notice-input" placeholder="নতুন নোটিশ"></div>
-                <button class="btn" style="margin-top:0;" onclick="updateNotice()">নোটিশ পাবলিশ করুন</button>
+                <button class="btn" style="margin-top:0;" onclick="updateNotice()">নোটিশ পাবলিক করুন</button>
             </div>
 
             <div style="margin-bottom:24px; background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0;">
@@ -332,8 +340,9 @@
     <script>
         const KVDB_URL = "https://kvdb.io/MN876wP8S9YstGq8mU4J4K/bgz_live_v2_prod";
 
-        // Memory Safety Default Structure (No hardcoded array defaults to avoid overwrite bug)
+        // Global memory layer
         let appData = null; 
+        let isEngineRunning = false;
 
         let selectedSeatsArray = [];
         let isLocalAdminSession = localStorage.getItem('bgz_admin_logged') === 'true';
@@ -369,17 +378,31 @@
                 let res = await fetch(KVDB_URL);
                 if (res.status === 200) {
                     let cloudData = await res.json();
-                    if (cloudData && typeof cloudData === 'object') {
-                        if (!cloudData.events) cloudData.events = [];
-                        if (!cloudData.bookings) cloudData.bookings = {};
-                        if (!cloudData.adminMembers) cloudData.adminMembers = [];
-                        appData = cloudData;
-                        return true;
+                    
+                    if (!cloudData || typeof cloudData !== 'object') {
+                        cloudData = {};
                     }
+                    
+                    if (!cloudData.hasOwnProperty('events') || !Array.isArray(cloudData.events)) {
+                        cloudData.events = [];
+                    }
+                    if (!cloudData.hasOwnProperty('bookings') || typeof cloudData.bookings !== 'object') {
+                        cloudData.bookings = {};
+                    }
+                    if (!cloudData.hasOwnProperty('adminMembers') || !Array.isArray(cloudData.adminMembers)) {
+                        cloudData.adminMembers = [];
+                    }
+                    if (!cloudData.hasOwnProperty('visitorLog') || typeof cloudData.visitorLog !== 'object') {
+                        cloudData.visitorLog = {};
+                    }
+
+                    appData = cloudData;
+                    return true;
                 }
-            } catch (e) { console.error("Cloud pull failed", e); }
+            } catch (e) { 
+                console.error("Cloud pull failed, rolling back to secure defaults", e); 
+            }
             
-            // If server is empty or network error, establish baseline safely without erasing
             if (!appData) {
                 appData = {
                     notice: "Buses Of Gabtoli Zone-এ আপনাকে স্বাগত!",
@@ -395,18 +418,27 @@
         }
 
         async function triggerLiveUpdateEngine() {
+            if (isEngineRunning) return; 
+            isEngineRunning = true;
+
             let activeScreenId = document.querySelector('.screen.active-screen')?.id;
-            if (activeScreenId === 'booking-screen' && selectedSeatsArray.length > 0) return; 
+            if (activeScreenId === 'booking-screen' && selectedSeatsArray.length > 0) {
+                isEngineRunning = false;
+                return; 
+            }
 
             await pullFromCloud();
             applyTheme(appData.theme || 'blue');
+            
             if (activeScreenId === 'user-panel') renderUserEvents();
             if (activeScreenId === 'booking-screen') generateSeats('user-seat-layout', false);
             if (activeScreenId === 'admin-panel') renderAdminPanel();
             checkForApprovedSlip();
+            
+            isEngineRunning = false;
         }
 
-        setInterval(triggerLiveUpdateEngine, 3000);
+        setInterval(triggerLiveUpdateEngine, 3500);
 
         async function trackVisitor() {
             const today = new Date().toISOString().split('T')[0];
@@ -419,7 +451,6 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
-            // Force strict serial loading from KVDB first before anything else runs
             await pullFromCloud();
             applyTheme(appData.theme || 'blue');
 
@@ -841,7 +872,7 @@
             document.getElementById('mem-name').value = "";
             document.getElementById('mem-phone').value = "";
             document.getElementById('mem-photo').value = "";
-            document.getElementById('admin-member-form-title').innerText = "👥 ایڈমিন প্যানেল লিস্ট ম্যানেজমেন্ট";
+            document.getElementById('admin-member-form-title').innerText = "👥 এডমিন প্যানেল লিস্ট ম্যানেজমেন্ট";
             document.getElementById('member-submit-btn').innerText = "মেম্বার ডাটা সেভ করুন";
             document.getElementById('member-cancel-edit-btn').style.display = "none";
         }
@@ -890,31 +921,4 @@
                                 <span class="badge ${badgeClass}">${b.status.toUpperCase()}</span>
                             </div>
                             <p style="color:#0f172a; font-weight:600;">👤 নাম: ${b.name} (${b.phone})</p>
-                            <p style="color:#10b981; font-weight:700;">💰 পেইড: ${b.paid} ৳ | <span style="color:#ef4444;">বাকি/ডু: ${b.due} ৳</span></p>
-                            <p style="font-size:11px; color:#64748b;">📝 নোট: ${b.note || 'N/A'} | ডিজিট: ${b.lastDigits || '-'}</p>
-                        </div>`;
-                }
-
-                if(b.status === 'pending' && !processedGroups.includes(b.seatsGroup)) {
-                    processedGroups.push(b.seatsGroup);
-                    let displaySeats = b.seatsGroup ? b.seatsGroup.replace(/\+/g, ', ') : seatId;
-                    reqList.innerHTML += `
-                        <div class="list-item">
-                            <p style="font-weight:700;"><b>সিট(সমূহ): ${displaySeats}</b></p>
-                            <p style="color:#334155;">নাম: ${b.name} | ফোন: ${b.phone}</p>
-                            <p style="font-size:13px; color:#b45309;">মোট ফি: <b>${b.totalFee} ৳</b> | পেইড: <b>${b.paid} ৳</b></p>
-                            <p style="font-size:13px; color:#475569;">নোট: <i>${b.note || 'N/A'}</i></p>
-                            <p style="font-size:12px;">লাস্ট ২ ডিজিট: <b>${b.lastDigits}</b></p>
-                            <div style="display:flex; gap:10px; margin-top:12px;">
-                                <button class="btn btn-success btn-sm" onclick="approveBooking('${seatId}')">Approve All</button>
-                                <button class="btn btn-danger btn-sm" onclick="openAdminSeatModal('${seatId}')">Manage</button>
-                            </div>
-                        </div>`;
-                }
-            }
-            if(reqList.innerHTML === '') reqList.innerHTML = '<p style="text-align:center; font-size:13px; color:var(--text-muted);">কোনো পেন্ডিং রিকোয়েস্ট নেই।</p>';
-            if(allHistoryList.innerHTML === '') allHistoryList.innerHTML = '<p style="text-align:center; font-size:13px; color:gray; padding:10px;">কোনো বুকিং হিস্টোরি পাওয়া যায়নি।</p>';
-        }
-    </script>
-</body>
-</html>
+                            <p style="color:#10b981; font-weight:700;">💰 পেইড: ${
