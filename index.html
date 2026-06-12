@@ -330,19 +330,10 @@
     </div>
 
     <script>
-        // Secure Unique App Endpoint URL (Prevents Overwriting Bugs)
         const KVDB_URL = "https://kvdb.io/MN876wP8S9YstGq8mU4J4K/bgz_live_v2_prod";
 
-        // Memory Safety Default Structure
-        let appData = {
-            notice: "Buses Of Gabtoli Zone-এ আপনাকে স্বাগত!",
-            noticeId: Date.now(),
-            events: [],
-            bookings: {}, 
-            visitorLog: {}, 
-            theme: "blue",
-            adminMembers: []
-        };
+        // Memory Safety Default Structure (No hardcoded array defaults to avoid overwrite bug)
+        let appData = null; 
 
         let selectedSeatsArray = [];
         let isLocalAdminSession = localStorage.getItem('bgz_admin_logged') === 'true';
@@ -361,6 +352,7 @@
         }
 
         async function pushToCloud() {
+            if (!appData) return;
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
                 await fetch(KVDB_URL, {
@@ -386,6 +378,19 @@
                     }
                 }
             } catch (e) { console.error("Cloud pull failed", e); }
+            
+            // If server is empty or network error, establish baseline safely without erasing
+            if (!appData) {
+                appData = {
+                    notice: "Buses Of Gabtoli Zone-এ আপনাকে স্বাগত!",
+                    noticeId: Date.now(),
+                    events: [],
+                    bookings: {},
+                    visitorLog: {},
+                    theme: "blue",
+                    adminMembers: []
+                };
+            }
             return false;
         }
 
@@ -393,17 +398,15 @@
             let activeScreenId = document.querySelector('.screen.active-screen')?.id;
             if (activeScreenId === 'booking-screen' && selectedSeatsArray.length > 0) return; 
 
-            let success = await pullFromCloud();
-            if (success) {
-                applyTheme(appData.theme || 'blue');
-                if (activeScreenId === 'user-panel') renderUserEvents();
-                if (activeScreenId === 'booking-screen') generateSeats('user-seat-layout', false);
-                if (activeScreenId === 'admin-panel') renderAdminPanel();
-                checkForApprovedSlip();
-            }
+            await pullFromCloud();
+            applyTheme(appData.theme || 'blue');
+            if (activeScreenId === 'user-panel') renderUserEvents();
+            if (activeScreenId === 'booking-screen') generateSeats('user-seat-layout', false);
+            if (activeScreenId === 'admin-panel') renderAdminPanel();
+            checkForApprovedSlip();
         }
 
-        setInterval(triggerLiveUpdateEngine, 2000);
+        setInterval(triggerLiveUpdateEngine, 3000);
 
         async function trackVisitor() {
             const today = new Date().toISOString().split('T')[0];
@@ -416,6 +419,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
+            // Force strict serial loading from KVDB first before anything else runs
             await pullFromCloud();
             applyTheme(appData.theme || 'blue');
 
@@ -475,7 +479,7 @@
             const container = document.getElementById('user-events-container');
             container.innerHTML = '';
             
-            if (!appData.events || appData.events.length === 0) {
+            if (!appData || !appData.events || appData.events.length === 0) {
                 container.innerHTML = `<p style="text-align:center; font-size:14px; color:var(--text-muted); margin-top:40px;">🔴 এই মুহূর্তে কোনো লাইভ ইভেন্ট বা ট্যুর নেই।</p>`;
                 return;
             }
@@ -506,6 +510,8 @@
         function generateSeats(containerId, isAdmin = false) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
+            if (!appData) return;
+            
             rows.forEach(row => {
                 for(let i=1; i<=4; i++) {
                     const seatId = row + i;
@@ -585,7 +591,7 @@
         }
 
         function checkForApprovedSlip() {
-            if(isLocalAdminSession) return;
+            if(isLocalAdminSession || !appData) return;
             const groupString = localStorage.getItem('gz_my_last_ordered_seats_group');
             if(groupString) {
                 const firstSeatOfGroup = groupString.split('+')[0];
@@ -779,7 +785,7 @@
 
         function openAdminListPopup() {
             const container = document.getElementById('user-admin-list-container'); container.innerHTML = '';
-            if(!appData.adminMembers || appData.adminMembers.length === 0) {
+            if(!appData || !appData.adminMembers || appData.adminMembers.length === 0) {
                 container.innerHTML = '<p style="text-align:center; font-size:12px; color:gray;">কোনো মেম্বার নেই</p>';
             } else {
                 appData.adminMembers.forEach(member => {
@@ -841,6 +847,7 @@
         }
 
         function renderAdminPanel() {
+            if (!appData) return;
             document.getElementById('admin-notice-input').value = appData.notice || '';
             document.getElementById('admin-theme-select').value = appData.theme || "blue";
             generateSeats('admin-seat-layout', true);
@@ -872,7 +879,6 @@
                 const b = appData.bookings[seatId];
                 let badgeClass = b.status === 'fixed' ? 'badge-fixed' : (b.status === 'booked' ? 'badge-booked' : 'badge-pending');
                 
-                // Advanced Premium History Layout Modification
                 if (!processedHistoryGroups.includes(b.seatsGroup)) {
                     processedHistoryGroups.push(b.seatsGroup);
                     let displaySeats = b.seatsGroup ? b.seatsGroup.replace(/\+/g, ', ') : seatId;
