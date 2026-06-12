@@ -29,10 +29,18 @@
         body { background-color: var(--bg-color); color: var(--text); padding: 20px 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.3s ease; }
         .app-container { width: 100%; max-width: 450px; min-height: 85vh; background: var(--card-bg); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
         
-        /* Splash Screen */
-        #splash-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .app-logo { width: 200px; height: auto; max-width: 80%; animation: zoomFade 2.5s ease-in-out infinite; }
-        @keyframes zoomFade { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.03); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+        /* New Global Website Entrance Loading Spinner */
+        #global-entrance-loader { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #ffffff; z-index: 999999; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; transition: opacity 0.4s ease;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid #f3f3f3;
+            border-top: 5px solid #2563eb; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Premium Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); z-index: 99999; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(8px); }
@@ -41,7 +49,7 @@
 
         .screen { display: none; }
         .active-screen { display: block; animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { transform: opacity; opacity: 1; } }
         .auth-title { text-align: center; margin: 15px 0 25px 0; font-size: 24px; color: #ef4444; font-weight: 800; letter-spacing: -0.5px; }
 
         /* Form Controls */
@@ -111,6 +119,25 @@
 
     <div id="loading-overlay">⏳ রিয়েল-টাইম ডাটা সিঙ্ক হচ্ছে...</div>
 
+    <div id="about-us-modal-overlay" class="modal-overlay">
+        <div class="modal-box" style="border-top-color: #000000; max-width: 400px;">
+            <div style="text-align: center; margin-bottom: 14px;">
+                <span style="font-size: 32px;">🖤</span>
+                <h3 style="color:#0f172a; font-weight:800; font-size:20px; margin-top:5px;">About Us</h3>
+                <p style="font-size:13px; font-weight:700; color:#ef4444;">Buses of Gabtoli Zone (BGZ)</p>
+            </div>
+            <div style="font-size: 14px; color:#334155; line-height: 1.6; text-align: justify; background: #f8fafc; padding: 15px; border-radius: 14px; border: 1px solid #e2e8f0;">
+                Buses of Gabtoli Zone (BGZ) শুধুমাত্র একটি বাসপ্রেমী কমিউনিটি নয়, এটি একটি পরিবার। বাস, ভ্রমণ এবং বন্ধুত্বের প্রতি ভালোবাসা থেকেই আমাদের যাত্রা শুরু।<br><br>
+                📌 <b>Born Date:</b> 01 February 2026<br>
+                🚌 <b>First Tour:</b> 09 April 2026<br><br>
+                অল্প সময়ের মধ্যেই BGZ হয়ে উঠেছে বাসপ্রেমী ও ভ্রমণপিপাসুদের একটি প্রাণবন্ত প্ল্যাটফর্ম, যেখানে সদস্যরা বাস সম্পর্কিত তথ্য, ফটোগ্রাফি, ভ্রমণ অভিজ্ঞতা এবং বিভিন্ন আয়োজনের মাধ্যমে একে অপরের সাথে যুক্ত থাকে।<br><br>
+                আমাদের লক্ষ্য হলো একটি সুস্থ, বন্ধুত্বপূর্ণ ও সংগঠিত কমিউনিটি গড়ে তোলা, যেখানে সবাই নিজেদের মতামত প্রকাশ করতে পারে এবং একসাথে নতুন নতুন গন্তব্য আবিষ্কার করতে পারে।
+                <p style="text-align:center; font-weight:700; margin-top:15px; color:#000; font-size:13px;">"More Than Buses, We Build Memories." 🖤✨</p>
+            </div>
+            <button class="btn btn-dark" style="margin-top:16px;" onclick="closeAboutUsModal()">বন্ধ করুন</button>
+        </div>
+    </div>
+
     <div id="admin-list-popup-overlay" class="modal-overlay">
         <div class="modal-box" style="border-top-color: #ef4444;">
             <h3 style="color:#ef4444; text-align:center; margin-bottom:16px; font-size:18px;">👥 আমাদের এডমিন প্যানেল লিস্ট</h3>
@@ -131,7 +158,7 @@
                 <div class="slip-row"><span>যাত্রীর নাম:</span> <b id="slip-user-name">-</b></div>
                 <div class="slip-row"><span>মোবাইল নাম্বার:</span> <b id="slip-user-phone">-</b></div>
                 <div class="slip-row"><span>সিট নাম্বার:</span> <b id="slip-seat-id" style="color:#1d4ed8; font-size:16px;">-</b></div>
-                <div class="slip-row"><span>বুকিং নোট:</span> <b id="slip-user-note" style="color:#475569;">-</b></div>
+                <div class="slip-row"><span>বुकিং নোট:</span> <b id="slip-user-note" style="color:#475569;">-</b></div>
                 <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 10px 0;">
                 <div class="slip-row"><span>মোট ফি:</span> <b id="slip-total-fee">- ৳</b></div>
                 <div class="slip-row"><span>পেইড অ্যামাউন্ট:</span> <b id="slip-paid-fee" style="color:#10b981;">- ৳</b></div>
@@ -168,9 +195,10 @@
 
     <div class="app-container">
         
-        <div id="splash-screen">
-            <div style="font-size: 42px; font-weight: 800; color: #2563eb; letter-spacing: -1px;">BGZ Realtime</div>
-            <p style="font-size:12px; color:#64748b; margin-top:5px;">Connecting Global Database...</p>
+        <div id="global-entrance-loader">
+            <div class="spinner"></div>
+            <div style="font-size: 20px; font-weight: 800; color: #2563eb; letter-spacing: -0.5px;">BGZ Realtime</div>
+            <p style="font-size:12px; color:#64748b; margin-top:6px;">ডাটাবেজ থেকে লাইভ আপডেট নেওয়া হচ্ছে...</p>
         </div>
 
         <div id="admin-login-screen" class="screen">
@@ -189,7 +217,10 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
                     <span class="admin-link" style="background: #fee2e2; color: #ef4444;" onclick="openAdminListPopup()">🔴 Admin Panel List</span>
-                    <span class="admin-link" onclick="showScreen('admin-login-screen')">Admin Access</span>
+                    <span class="admin-link" style="background: #0f172a; color: #ffffff;" onclick="openAboutUsModal()">🖤 About BGZ</span>
+                </div>
+                <div style="text-align: center; margin-top: 2px;">
+                    <span style="color: #2563eb; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: underline;" onclick="showScreen('admin-login-screen')">Admin Portal Access</span>
                 </div>
             </div>
             <div id="user-events-container"></div>
@@ -251,7 +282,7 @@
             </div>
 
             <div style="background: #fff; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom:24px; box-shadow:var(--card-shadow);">
-                <h4 style="font-size:15px; font-weight:700; color:#2563eb; margin-bottom:12px;">🎨 অ্যাপ থিম ব্যাকгруন্ড কন্ট্রোল</h4>
+                <h4 style="font-size:15px; font-weight:700; color:#2563eb; margin-bottom:12px;">🎨 অ্যাপ থিম ব্যাকগ্রাউন্ড কন্ট্রোল</h4>
                 <div class="form-group">
                     <select id="admin-theme-select">
                         <option value="blue">Ocean Blue</option>
@@ -299,8 +330,7 @@
     </div>
 
     <script>
-        // Realtime Global Database Config (Using Free kvdb.io Bucket)
-        // This acts as a global shared cloud storage for all users online
+        // Shared Realtime Cloud Storage API Bulk Config
         const KVDB_URL = "https://kvdb.io/MN876wP8S9YstGq8mU4J4K/bgz_shared_data";
 
         let appData = {
@@ -329,7 +359,6 @@
             document.documentElement.style.setProperty('--btn-shadow', selectedTheme.shadow);
         }
 
-        // Push data dynamically to Cloud Database
         async function pushToCloud() {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
@@ -342,7 +371,6 @@
             document.getElementById('loading-overlay').style.display = 'none';
         }
 
-        // Pull fresh global data from Cloud Database
         async function pullFromCloud() {
             try {
                 let res = await fetch(KVDB_URL);
@@ -357,10 +385,9 @@
             return false;
         }
 
-        // Periodic Real-Time Sync Loop (Every 2 seconds)
-        setInterval(async () => {
+        // Realtime Live Engine - Ensures instant UI update across screens
+        async function triggerLiveUpdateEngine() {
             let activeScreenId = document.querySelector('.screen.active-screen')?.id;
-            // Admin is writing or user is mid-form, don't interrupt active selection typing
             if (activeScreenId === 'booking-screen' && selectedSeatsArray.length > 0) return; 
 
             let success = await pullFromCloud();
@@ -371,9 +398,11 @@
                 if (activeScreenId === 'admin-panel') renderAdminPanel();
                 checkForApprovedSlip();
             }
-        }, 2500);
+        }
 
-        // Track Visitors Globally
+        // 2.5s Sync Loop
+        setInterval(triggerLiveUpdateEngine, 2500);
+
         async function trackVisitor() {
             const today = new Date().toISOString().split('T')[0];
             if (!sessionStorage.getItem('gz_counted_visit_realtime')) {
@@ -384,24 +413,24 @@
             }
         }
 
-        // Init Setup
+        // Initialization with forced database pulling sequence
         window.addEventListener('DOMContentLoaded', async () => {
+            // Force pull data before hiding loading screens to avoid un-synced data flash
             await pullFromCloud();
             applyTheme(appData.theme || 'blue');
 
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.opacity = '0';
+            // Hide the website loader and launch dashboard
+            const entranceLoader = document.getElementById('global-entrance-loader');
+            if (entranceLoader) {
+                entranceLoader.style.opacity = '0';
                 setTimeout(async () => {
-                    document.getElementById('splash-screen').style.display = 'none';
+                    entranceLoader.style.display = 'none';
                     await trackVisitor();
-                    if (isLocalAdminSession) {
-                        showScreen('admin-panel');
-                    } else {
-                        showScreen('user-panel');
-                    }
+                    if (isLocalAdminSession) showScreen('admin-panel');
+                    else showScreen('user-panel');
                     triggerNoticePopup();
-                }, 500);
-            }, 2500);
+                }, 400);
+            }
         });
 
         function triggerNoticePopup() {
@@ -416,6 +445,9 @@
             document.getElementById('notice-popup-overlay').style.display = 'none';
             sessionStorage.setItem('gz_last_skipped_notice_id_rt', appData.noticeId);
         }
+
+        function openAboutUsModal() { document.getElementById('about-us-modal-overlay').style.display = 'flex'; }
+        function closeAboutUsModal() { document.getElementById('about-us-modal-overlay').style.display = 'none'; }
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
@@ -481,9 +513,7 @@
                     else if(status === 'pending') seatDiv.classList.add('pending');
                     else if(status === 'fixed') seatDiv.classList.add('fixed');
 
-                    if(selectedSeatsArray.includes(seatId)) {
-                        seatDiv.classList.add('selected');
-                    }
+                    if(selectedSeatsArray.includes(seatId)) seatDiv.classList.add('selected');
 
                     if(isAdmin) { 
                         seatDiv.onclick = () => openAdminSeatModal(seatId); 
@@ -495,7 +525,6 @@
             });
         }
 
-        // Multi-Seat Selection Logic (Max 4 Seats)
         function toggleSeatSelection(seatId, element) {
             if (selectedSeatsArray.includes(seatId)) {
                 selectedSeatsArray = selectedSeatsArray.filter(id => id !== seatId);
@@ -524,7 +553,6 @@
 
             if(paidAmt > totalFeeCalculated) { alert(`পেমেন্ট মোট এন্ট্রি ফি ${totalFeeCalculated} ৳ এর বেশি হতে পারবে না!`); return; }
 
-            // Save booking against the main/first seat identifier string group
             const primarySeatString = selectedSeatsArray.join('+');
 
             selectedSeatsArray.forEach(seat => {
@@ -584,7 +612,6 @@
             }
         }
 
-        // Fixed Robust Download Method (Fallback supported)
         function downloadInvoiceSlip() {
             const target = document.getElementById('invoice-slip-capture');
             const btn = document.getElementById('download-slip-btn');
@@ -606,13 +633,12 @@
                     document.body.removeChild(link);
                     btn.innerText = "📥 DOWNLOAD SLIP (ফোনে সেভ করুন)";
                 } catch(e) {
-                    // Fallback to open in new tab if standard download gets blocked
                     let win = window.open();
-                    win.document.write('<iframe src="' + canvas.toDataURL('image/png')  + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+                    win.document.write('<iframe src="' + canvas.toDataURL('image/png')  + '" frameborder="0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
                     btn.innerText = "📥 DOWNLOAD SLIP (ফোনে সেভ করুন)";
                 }
             }).catch(err => {
-                alert("ডাউনলোড ডিরেক্টলি ব্লকড! টিকিটটির একটি স্ক্রিনশট (Screenshot) নিয়ে নিন।");
+                alert("টিকিটটির একটি স্ক্রিনশট (Screenshot) নিয়ে নিন।");
                 btn.innerText = "📥 DOWNLOAD SLIP (ফোনে সেভ করুন)";
             });
         }
@@ -625,11 +651,8 @@
 
             if(!title || !fee) return alert('নাম ও এন্ট্রি ফি দিন!');
 
-            if(editIdx !== "") {
-                appData.events[editIdx] = { title, desc, fee };
-            } else {
-                appData.events.push({ title, desc, fee });
-            }
+            if(editIdx !== "") appData.events[editIdx] = { title, desc, fee };
+            else appData.events.push({ title, desc, fee });
 
             await pushToCloud();
             resetEventForm();
@@ -691,7 +714,6 @@
             const seatId = document.getElementById('admin-target-seat-id').value;
             const currentSeat = appData.bookings[seatId];
 
-            // If it belongs to a multiseat booking, update the entire group together
             let targetSeats = (currentSeat && currentSeat.seatsGroup) ? currentSeat.seatsGroup.split('+') : [seatId];
 
             if (newStatus === 'cancelled') {
