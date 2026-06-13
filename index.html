@@ -26,7 +26,6 @@
             --btn-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
 
-        /* ফন্ট ফ্যামিলি ফিক্সড করা হয়েছে এখানে 👇 */
         * { 
             box-sizing: border-box; 
             margin: 0; 
@@ -41,7 +40,7 @@
         #global-entrance-loader { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: #ffffff; z-index: 999999; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; transition: opacity 0.4s ease;
+            justify-content: center; align-items: center; transition: opacity 0.3s ease;
         }
         .spinner {
             width: 50px; height: 50px; border: 5px solid #f3f3f3;
@@ -340,8 +339,8 @@
     <script>
         const KVDB_URL = "https://kvdb.io/MN876wP8S9YstGq8mU4J4K/bgz_live_v2_prod";
 
-        // Global memory layer
-        let appData = null; 
+        // Global memory layer - Local Storage cache added for instant render
+        let appData = JSON.parse(localStorage.getItem('bgz_app_cache')) || null; 
         let isEngineRunning = false;
 
         let selectedSeatsArray = [];
@@ -362,6 +361,7 @@
 
         async function pushToCloud() {
             if (!appData) return;
+            localStorage.setItem('bgz_app_cache', JSON.stringify(appData)); // Update cache locally
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
                 await fetch(KVDB_URL, {
@@ -379,29 +379,17 @@
                 if (res.status === 200) {
                     let cloudData = await res.json();
                     
-                    if (!cloudData || typeof cloudData !== 'object') {
-                        cloudData = {};
-                    }
-                    
-                    if (!cloudData.hasOwnProperty('events') || !Array.isArray(cloudData.events)) {
-                        cloudData.events = [];
-                    }
-                    if (!cloudData.hasOwnProperty('bookings') || typeof cloudData.bookings !== 'object') {
-                        cloudData.bookings = {};
-                    }
-                    if (!cloudData.hasOwnProperty('adminMembers') || !Array.isArray(cloudData.adminMembers)) {
-                        cloudData.adminMembers = [];
-                    }
-                    if (!cloudData.hasOwnProperty('visitorLog') || typeof cloudData.visitorLog !== 'object') {
-                        cloudData.visitorLog = {};
-                    }
+                    if (!cloudData || typeof cloudData !== 'object') cloudData = {};
+                    if (!cloudData.hasOwnProperty('events') || !Array.isArray(cloudData.events)) cloudData.events = [];
+                    if (!cloudData.hasOwnProperty('bookings') || typeof cloudData.bookings !== 'object') cloudData.bookings = {};
+                    if (!cloudData.hasOwnProperty('adminMembers') || !Array.isArray(cloudData.adminMembers)) cloudData.adminMembers = [];
+                    if (!cloudData.hasOwnProperty('visitorLog') || typeof cloudData.visitorLog !== 'object') cloudData.visitorLog = {};
 
                     appData = cloudData;
+                    localStorage.setItem('bgz_app_cache', JSON.stringify(appData)); // Save into local storage
                     return true;
                 }
-            } catch (e) { 
-                console.error("Cloud pull failed, rolling back to secure defaults", e); 
-            }
+            } catch (e) { console.error("Cloud pull failed", e); }
             
             if (!appData) {
                 appData = {
@@ -419,14 +407,12 @@
 
         async function triggerLiveUpdateEngine() {
             if (isEngineRunning) return; 
-            isEngineRunning = true;
-
+            
             let activeScreenId = document.querySelector('.screen.active-screen')?.id;
-            if (activeScreenId === 'booking-screen' && selectedSeatsArray.length > 0) {
-                isEngineRunning = false;
-                return; 
-            }
+            // Prevent auto refreshing while a user is selecting seats to avoid input loss
+            if (activeScreenId === 'booking-screen' && selectedSeatsArray.length > 0) return; 
 
+            isEngineRunning = true;
             await pullFromCloud();
             applyTheme(appData.theme || 'blue');
             
@@ -438,7 +424,7 @@
             isEngineRunning = false;
         }
 
-        setInterval(triggerLiveUpdateEngine, 3500);
+        setInterval(triggerLiveUpdateEngine, 4500); // Optimized refresh gap slightly to prevent CPU throttling
 
         async function trackVisitor() {
             const today = new Date().toISOString().split('T')[0];
@@ -451,11 +437,20 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
-            await pullFromCloud();
+            // Render instantly using Cache Data before making cloud API call
+            if (appData) {
+                applyTheme(appData.theme || 'blue');
+                if (isLocalAdminSession) showScreen('admin-panel');
+                else showScreen('user-panel');
+                document.getElementById('global-entrance-loader').style.display = 'none';
+                triggerNoticePopup();
+            }
+
+            await pullFromCloud(); // Network call in background
             applyTheme(appData.theme || 'blue');
 
             const entranceLoader = document.getElementById('global-entrance-loader');
-            if (entranceLoader) {
+            if (entranceLoader && entranceLoader.style.display !== 'none') {
                 entranceLoader.style.opacity = '0';
                 setTimeout(async () => {
                     entranceLoader.style.display = 'none';
@@ -463,7 +458,11 @@
                     if (isLocalAdminSession) showScreen('admin-panel');
                     else showScreen('user-panel');
                     triggerNoticePopup();
-                }, 400);
+                }, 200);
+            } else {
+                let activeScreenId = document.querySelector('.screen.active-screen')?.id;
+                if (activeScreenId === 'user-panel') renderUserEvents();
+                if (activeScreenId === 'admin-panel') renderAdminPanel();
             }
         });
 
@@ -895,9 +894,7 @@
 
             const evMgmtContainer = document.getElementById('admin-events-management-list'); evMgmtContainer.innerHTML = '';
             if(appData.events) {
-                appData.events.forEach((ev, idx) => {
-                    evMgmtContainer.innerHTML += `<div style="background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:700;">${ev.title}</span><div style="display:flex; gap:6px;"><button class="btn btn-sm" style="background:#3b82f6;" onclick="editEvent(${idx})">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteEvent(${idx})">Delete</button></div></div>`;
-                });
+                evMgmtContainer.innerHTML += `<div style="background:#f8fafc; padding:10px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:700;">${ev.title}</span><div style="display:flex; gap:6px;"><button class="btn btn-sm" style="background:#3b82f6;" onclick="editEvent(${idx})">Edit</button><button class="btn btn-sm btn-danger" onclick="deleteEvent(${idx})">Delete</button></div></div>`;
             }
 
             const reqList = document.getElementById('admin-requests-list'); reqList.innerHTML = '';
@@ -921,4 +918,31 @@
                                 <span class="badge ${badgeClass}">${b.status.toUpperCase()}</span>
                             </div>
                             <p style="color:#0f172a; font-weight:600;">👤 নাম: ${b.name} (${b.phone})</p>
-                            <p style="color:#10b981; font-weight:700;">💰 পেইড: ${
+                            <p style="color:#10b981; font-weight:700;">💰 পেইড: ${b.paid} ৳ | <span style="color:#ef4444;">বাকি/ডু: ${b.due} ৳</span></p>
+                            <p style="font-size:11px; color:#64748b;">📝 নোট: ${b.note || 'N/A'} | ডিজিট: ${b.lastDigits || '-'}</p>
+                        </div>`;
+                }
+
+                if(b.status === 'pending' && !processedGroups.includes(b.seatsGroup)) {
+                    processedGroups.push(b.seatsGroup);
+                    let displaySeats = b.seatsGroup ? b.seatsGroup.replace(/\+/g, ', ') : seatId;
+                    reqList.innerHTML += `
+                        <div class="list-item">
+                            <p style="font-weight:700;"><b>সিট(সমূহ): ${displaySeats}</b></p>
+                            <p style="color:#334155;">নাম: ${b.name} | ফোন: ${b.phone}</p>
+                            <p style="font-size:13px; color:#b45309;">মোট ফি: <b>${b.totalFee} ৳</b> | পেইড: <b>${b.paid} ৳</b></p>
+                            <p style="font-size:13px; color:#475569;">নোট: <i>${b.note || 'N/A'}</i></p>
+                            <p style="font-size:12px;">লাস্ট ২ ডিজিট: <b>${b.lastDigits}</b></p>
+                            <div style="display:flex; gap:10px; margin-top:12px;">
+                                <button class="btn btn-success btn-sm" onclick="approveBooking('${seatId}')">Approve All</button>
+                                <button class="btn btn-danger btn-sm" onclick="openAdminSeatModal('${seatId}')">Manage</button>
+                            </div>
+                        </div>`;
+                }
+            }
+            if(reqList.innerHTML === '') reqList.innerHTML = '<p style="text-align:center; font-size:13px; color:var(--text-muted);">কোনো পেন্ডিং রিকোয়েস্ট নেই।</p>';
+            if(allHistoryList.innerHTML === '') allHistoryList.innerHTML = '<p style="text-align:center; font-size:13px; color:gray; padding:10px;">কোনো বুকিং হিস্টোরি পাওয়া যায়নি।</p>';
+        }
+    </script>
+</body>
+</html>
